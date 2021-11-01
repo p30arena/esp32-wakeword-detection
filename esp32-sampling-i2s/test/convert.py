@@ -1,7 +1,6 @@
 import socket
 import wave
-
-freq = 16000
+from commons import freq
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
