@@ -1,6 +1,7 @@
 #include <Arduino.h>
-#include "ADCSampler.h"
 #include <WiFi.h>
+#include "ADCSampler.h"
+#include "creds.h"
 
 boolean wifiConnected = false;
 WiFiServer Server(8840);
@@ -58,7 +59,7 @@ void setup()
   xTaskCreatePinnedToCore(adcWriterTask, "ADC Writer Task", 4096, adcSampler, 1, &adcWriterTaskHandle, 1);
   adcSampler->start(I2S_NUM_0, adcI2SConfig, 16000, adcWriterTaskHandle);
 
-  connectToWiFi("myeli:3", "dadashtiba1374!!ll10");
+  connectToWiFi(WIFI_SSID, WIFI_PWD);
 }
 
 void loop()
