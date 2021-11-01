@@ -1,0 +1,49 @@
+#include <Arduino.h>
+#include "esp_adc_cal.h"
+
+#define MIC_L 12
+// #define MIC_R 13
+
+uint32_t samples = 0;
+bool stop = false;
+int ptr;
+
+void setup()
+{
+  // setCpuFrequencyMhz(240);
+  Serial.begin(115200);
+  // analogReadResolution(10);
+  // analogSetAttenuation(ADC_0db);
+  // analogSetClockDiv(16);
+  // adcAttachPin(MIC_L);
+}
+
+void loop()
+{
+  if (stop == true)
+  {
+    return;
+  }
+
+  if (millis() > 1000)
+  {
+    Serial.println(samples);
+    stop = true;
+    return;
+  }
+
+  samples++;
+  // uint16_t leftData = analogRead(MIC_L);
+  adc2_get_raw(ADC2_CHANNEL_5, ADC_WIDTH_BIT_12, &ptr);
+  // uint16_t rightData = analogRead(MIC_R);
+
+  // Serial.print(leftData);
+  // Serial.print(",");
+  // Serial.print(rightData);
+  // Serial.println();
+
+  // Serial.println(leftData);
+
+  // delay(30);
+  // delayMicroseconds(62U);
+}
