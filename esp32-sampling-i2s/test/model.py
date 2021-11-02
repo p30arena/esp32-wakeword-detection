@@ -71,27 +71,29 @@ def preprocess_dataset(files):
 
 
 def get_model_train(spectrogram_ds, input_shape, num_labels):
-    norm_layer = layers.Normalization()
-    norm_layer.adapt(spectrogram_ds.map(lambda x, _: x))
+    model = None
+    if model_path.exists():
+        model = tf.keras.models.load_model(model_path)
+    else:
+        norm_layer = layers.Normalization()
+        norm_layer.adapt(spectrogram_ds.map(lambda x, _: x))
 
-    model = models.Sequential([
-        layers.Input(shape=input_shape),
-        layers.Resizing(32, 32),
-        norm_layer,
-        layers.Conv2D(32, 3, activation='relu', name='1.conv2D'),
-        layers.Conv2D(64, 3, activation='relu', name='2.conv2D'),
-        layers.MaxPooling2D(),
-        layers.Dropout(0.25),
-        layers.Flatten(),
-        layers.Dense(128, activation='relu', name='1.dense'),
-        layers.Dropout(0.5),
-        layers.Dense(num_labels, name='2.dense'),
-    ])
+        model = models.Sequential([
+            layers.Input(shape=input_shape),
+            layers.Resizing(32, 32),
+            norm_layer,
+            layers.Conv2D(32, 3, activation='relu'),
+            layers.MaxPooling2D(),
+            layers.Conv2D(64, 3, activation='relu'),
+            layers.MaxPooling2D(),
+            layers.Dropout(0.25),
+            layers.Flatten(),
+            layers.Dense(128, activation='relu'),
+            layers.Dropout(0.5),
+            layers.Dense(num_labels),
+        ])
 
     model.summary()
-
-    if model_path.exists():
-        model.load_weights(model_path)
 
     model.compile(
         optimizer=tf.keras.optimizers.Adam(),

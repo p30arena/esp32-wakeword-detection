@@ -47,7 +47,7 @@ waveform_ds = files_ds.map(get_waveform_and_label, num_parallel_calls=AUTOTUNE)
 
 set_params(commands, AUTOTUNE)
 
-if __name__ == "main":
+if __name__ == "__main__":
     # rows = 3
     # cols = 3
     # n = rows*cols
@@ -128,7 +128,7 @@ if __name__ == "main":
 
     model = get_model_train(spectrogram_ds, input_shape, num_labels)
 
-    EPOCHS = 8
+    EPOCHS = 40
     history = model.fit(
         train_ds,
         validation_data=val_ds,
