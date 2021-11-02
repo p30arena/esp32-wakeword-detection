@@ -6,17 +6,23 @@ from time import sleep
 from typing import Callable
 
 closed = False
+must_restart = False
 
 
 def capture(events: list):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.settimeout(3.0)
-        s.connect(('192.168.1.89', 8840))
-        events.insert(0, ("on_connected",))
-        frame_data = bytes()
-        while not closed:
-            try:
+        try:
+            n_timeouts = 0
+            connected = False
+            s.settimeout(3.0)
+            s.connect(('192.168.1.89', 8840))
+            connected = True
+            events.insert(0, ("on_connected",))
+            frame_data = bytes()
+
+            while not closed:
                 chunk = s.recv(freq)
+                n_timeouts = 0
                 n_appended = 0
                 n_appended = min(len(chunk), freq - len(frame_data))
                 frame_data += chunk[:n_appended]
@@ -32,12 +38,15 @@ def capture(events: list):
                     frame_data = bytes()
                     if n_appended < len(chunk):
                         frame_data += chunk[n_appended:]
-            except BaseException as err:
-                if isinstance(err, socket.timeout):
-                    print("timeout")
-                else:
-                    print(err)
-                    close()
+        except BaseException as err:
+            if isinstance(err, socket.timeout):
+                n_timeouts += 1
+                print("timeout")
+                if not connected or n_timeouts == 4:
+                    restart()
+            else:
+                print(err)
+                close()
 
 
 def begin(events: list) -> Thread:
@@ -49,7 +58,12 @@ def begin(events: list) -> Thread:
 def close() -> None:
     global closed
     closed = True
-    print("exiting")
+
+
+def restart() -> None:
+    global must_restart
+    must_restart = True
+    close()
 
 
 def write_frame_wave(filename: str, frame: bytes):
@@ -65,7 +79,8 @@ def write_num_list(filename: str, lst: list):
         f.write('\n'.join(map(lambda n: str(n), lst)))
 
 
-def loop(on_connected: Callable, on_frame: Callable[[bytes, list], None]):
+def loop(on_connected: Callable, on_frame: Callable[[bytes, list], None]) -> int:
+    global must_restart, closed
     events = []
 
     t = begin(events)
@@ -85,4 +100,12 @@ def loop(on_connected: Callable, on_frame: Callable[[bytes, list], None]):
                     on_frame(frame_data, num_data)
     except KeyboardInterrupt:
         close()
-        t.join()
+
+    t.join()
+
+    if must_restart:
+        closed = False
+        must_restart = False
+        return 1
+    else:
+        return 0

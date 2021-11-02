@@ -37,4 +37,7 @@ def on_frame(frame_data: bytes, num_data: list):
         return
 
 
-capture.loop(on_connected, on_frame)
+while capture.loop(on_connected, on_frame) == 1:
+    print("restarting")
+
+print("exiting")
