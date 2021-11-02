@@ -32,8 +32,12 @@ def capture(events: list):
                     frame_data = bytes()
                     if n_appended < len(chunk):
                         frame_data += chunk[n_appended:]
-            except:
-                close()
+            except BaseException as err:
+                if isinstance(err, TimeoutError):
+                    print("timeout")
+                else:
+                    print(err)
+                    close()
 
 
 def begin(events: list) -> Thread:
@@ -45,6 +49,7 @@ def begin(events: list) -> Thread:
 def close() -> None:
     global closed
     closed = True
+    print("exiting")
 
 
 def write_frame_wave(filename: str, frame: bytes):
@@ -80,5 +85,4 @@ def loop(on_connected: Callable, on_frame: Callable[[bytes, list], None]):
                     on_frame(frame_data, num_data)
     except KeyboardInterrupt:
         close()
-        print("exiting")
         t.join()
