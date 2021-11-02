@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-with open('out.txt', 'r') as f:
+with open('out/out.txt', 'r') as f:
     lines = f.readlines()
     x = []
     y = []
