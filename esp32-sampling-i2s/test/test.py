@@ -20,7 +20,7 @@ frame_data = frame_data.flatten()
 frame_data += 22000
 
 
-write_frame_wave("out/test.wav", frame_data)
+# write_frame_wave("out/test.wav", frame_data)
 # model = get_model_test()
 # sample_ds = preprocess_dataset(["out/test.wav"])
 # print(sample_ds)
@@ -30,11 +30,11 @@ write_frame_wave("out/test.wav", frame_data)
 #     plt.title(f'Predictions for "{commands[label[0]]}"')
 #     plt.show()
 
-audio_binary = tf.io.read_file("out/test.wav")
-wf = decode_audio(audio_binary)
+# audio_binary = tf.io.read_file("out/test.wav")
+# wf = decode_audio(audio_binary)
 
-# spectogram = get_spectrogram(frame_data.astype(np.float32))
-spectogram = get_spectrogram(wf)
+spectogram = get_spectrogram(frame_data.astype(np.float32) / 32768)
+# spectogram = get_spectrogram(wf)
 spectogram = spectogram[None, :]
 model = get_model_test()
 prediction = model.predict(spectogram)
