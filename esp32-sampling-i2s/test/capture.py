@@ -33,7 +33,7 @@ def capture(events: list):
                     if n_appended < len(chunk):
                         frame_data += chunk[n_appended:]
             except BaseException as err:
-                if isinstance(err, TimeoutError):
+                if isinstance(err, socket.timeout):
                     print("timeout")
                 else:
                     print(err)
