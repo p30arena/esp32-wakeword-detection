@@ -114,7 +114,8 @@ if __name__ == "__main__":
     val_ds = preprocess_dataset(val_files)
     test_ds = preprocess_dataset(test_files)
 
-    batch_size = 64
+    # batch_size = 64
+    batch_size = 32
     train_ds = train_ds.batch(batch_size)
     val_ds = val_ds.batch(batch_size)
 
@@ -133,7 +134,7 @@ if __name__ == "__main__":
         train_ds,
         validation_data=val_ds,
         epochs=EPOCHS,
-        # callbacks=tf.keras.callbacks.EarlyStopping(verbose=1, patience=2),
+        callbacks=tf.keras.callbacks.EarlyStopping(verbose=1, patience=10),
     )
 
     model.save(model_path)
