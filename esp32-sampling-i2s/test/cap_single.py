@@ -1,7 +1,7 @@
 import capture
 from commons import get_fileno
 
-fileno = get_fileno('out/cmd-1')
+fileno = get_fileno('out/data/cmd-1')
 n_captured = 0
 frames = bytes()
 data = []
@@ -21,8 +21,9 @@ def on_frame(frame_data: bytes, num_data: list):
 
     if n_captured == 3:
         capture.close()
-        capture.write_frame_wave("out/cmd-1/{0}.wav".format(fileno), frames)
-        capture.write_num_list("out/cmd-1/{0}.txt".format(fileno), data)
+        capture.write_frame_wave(
+            "out/data/cmd-1/{0}.wav".format(fileno), frames)
+        capture.write_num_list("out/data/cmd-1/{0}.txt".format(fileno), data)
     else:
         return
 
