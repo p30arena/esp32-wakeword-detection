@@ -1,6 +1,6 @@
 import socket
 import wave
-from commons import freq
+from commons import freq, le2be
 from threading import Thread
 from time import sleep
 from typing import Callable
@@ -25,13 +25,8 @@ def capture(events: list):
                     n_appended = min(len(chunk), freq - len(frame_data))
                     frame_data += chunk[:n_appended]
                     if freq == len(frame_data):
-                        i = 0
                         num_data = []
-                        while i < len(frame_data):
-                            n = frame_data[i+1] << 8
-                            n |= frame_data[i]
-                            num_data.append(n)
-                            i += 2
+                        le2be(frame_data, num_data)
                         events.insert(0, ("on_frame", frame_data, num_data))
                         frame_data = bytes()
                         if n_appended < len(chunk):

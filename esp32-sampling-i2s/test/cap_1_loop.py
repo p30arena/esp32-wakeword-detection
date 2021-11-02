@@ -1,14 +1,7 @@
-import os
 import capture
+from commons import get_fileno
 
-fileno = 0
-
-_files = list(map(lambda f: int(f.split('.')[0]), filter(
-    lambda f: f.endswith('.wav'), os.listdir('out/other-1'))))
-if len(_files):
-    _files.sort(reverse=True)
-    fileno = _files[0] + 1
-
+fileno = get_fileno('out/other-1')
 n_captured = 0
 frames = bytes()
 data = []
