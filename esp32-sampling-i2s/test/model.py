@@ -80,15 +80,9 @@ def get_model_train(spectrogram_ds, input_shape, num_labels):
 
         model = models.Sequential([
             layers.Input(shape=input_shape),
-            layers.Resizing(32, 32),
-            norm_layer,
-            layers.Conv2D(32, 3, activation='relu'),
-            layers.MaxPooling2D(),
-            layers.Conv2D(64, 3, activation='relu'),
-            layers.MaxPooling2D(),
-            layers.Dropout(0.25),
+            layers.Resizing(16, 16),
+            layers.Conv2D(32, 16, activation='relu'),
             layers.Flatten(),
-            layers.Dense(128, activation='relu'),
             layers.Dropout(0.5),
             layers.Dense(num_labels),
         ])

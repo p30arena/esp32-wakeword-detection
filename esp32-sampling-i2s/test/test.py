@@ -38,6 +38,6 @@ spectogram = get_spectrogram(frame_data.astype(np.float32) / 32768)
 spectogram = spectogram[None, :]
 model = get_model_test()
 prediction = model.predict(spectogram)
-print(prediction)
+print(prediction[0])
 plt.bar(commands, tf.nn.softmax(prediction[0]))
 plt.show()
