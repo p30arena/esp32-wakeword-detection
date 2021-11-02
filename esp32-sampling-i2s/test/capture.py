@@ -13,37 +13,42 @@ def capture(events: list):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             n_timeouts = 0
-            connected = False
             s.settimeout(3.0)
             s.connect(('192.168.1.89', 8840))
-            connected = True
             events.insert(0, ("on_connected",))
             frame_data = bytes()
 
             while not closed:
-                chunk = s.recv(freq)
-                n_timeouts = 0
-                n_appended = 0
-                n_appended = min(len(chunk), freq - len(frame_data))
-                frame_data += chunk[:n_appended]
-                if freq == len(frame_data):
-                    i = 0
-                    num_data = []
-                    while i < len(frame_data):
-                        n = frame_data[i+1] << 8
-                        n |= frame_data[i]
-                        num_data.append(n)
-                        i += 2
-                    events.insert(0, ("on_frame", frame_data, num_data))
-                    frame_data = bytes()
-                    if n_appended < len(chunk):
-                        frame_data += chunk[n_appended:]
+                try:
+                    chunk = s.recv(freq)
+                    n_timeouts = 0
+                    n_appended = min(len(chunk), freq - len(frame_data))
+                    frame_data += chunk[:n_appended]
+                    if freq == len(frame_data):
+                        i = 0
+                        num_data = []
+                        while i < len(frame_data):
+                            n = frame_data[i+1] << 8
+                            n |= frame_data[i]
+                            num_data.append(n)
+                            i += 2
+                        events.insert(0, ("on_frame", frame_data, num_data))
+                        frame_data = bytes()
+                        if n_appended < len(chunk):
+                            frame_data += chunk[n_appended:]
+                except BaseException as err:
+                    if isinstance(err, socket.timeout):
+                        n_timeouts += 1
+                        print("timeout")
+                        if n_timeouts == 4:
+                            restart()
+                    else:
+                        print(err)
+                        close()
         except BaseException as err:
             if isinstance(err, socket.timeout):
-                n_timeouts += 1
-                print("timeout")
-                if not connected or n_timeouts == 4:
-                    restart()
+                print("connection timeout")
+                restart()
             else:
                 print(err)
                 close()
