@@ -6,6 +6,8 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.keras import models
 
+import tensorflow_model_optimization as tfmot
+
 commands = None
 AUTOTUNE = None
 
@@ -51,6 +53,10 @@ def get_spectrogram(waveform):
 
     spectrogram = tf.abs(spectrogram)
 
+    # removed layers.Resizing in the model so adding resize here
+    spectrogram = tf.image.resize(spectrogram[..., None], (32, 32))
+    spectrogram = tf.squeeze(spectrogram, axis=2)
+
     return spectrogram
 
 
@@ -77,12 +83,13 @@ def get_model_train(spectrogram_ds, input_shape, num_labels):
     else:
         model = models.Sequential([
             layers.Input(shape=input_shape),
-            layers.Resizing(32, 32),
+            # layers.Resizing(32, 32),
             layers.Conv2D(8, 8, activation='relu'),
             layers.Flatten(),
             layers.Dropout(0.5),
             layers.Dense(num_labels),
         ])
+        model = tfmot.quantization.keras.quantize_model(model)
 
     model.summary()
 
@@ -99,5 +106,5 @@ def get_model_test():
     return tf.keras.models.load_model(model_path)
 
 
-def get_model_test_tinyml():
-    interpreter = tf.lite.Interpreter(model_path.joinpath('./model.tflite'))
+def get_model_test_tinyml() -> tf.lite.Interpreter:
+    return tf.lite.Interpreter(str(model_path.joinpath('./model.tflite')))

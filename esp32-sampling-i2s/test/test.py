@@ -33,11 +33,11 @@ frame_data += 22000
 # audio_binary = tf.io.read_file("out/test.wav")
 # wf = decode_audio(audio_binary)
 
-spectogram = get_spectrogram(frame_data.astype(np.float32) / 32768)
-# spectogram = get_spectrogram(wf)
-spectogram = spectogram[None, :]
+spectrogram = get_spectrogram(frame_data.astype(np.float32) / 32768)
+# spectrogram = get_spectrogram(wf)
+spectrogram = spectrogram[None, :]
 model = get_model_test()
-prediction = model.predict(spectogram)
+prediction = model.predict(spectrogram)
 print(prediction[0])
 plt.bar(commands, tf.nn.softmax(prediction[0]))
 plt.show()

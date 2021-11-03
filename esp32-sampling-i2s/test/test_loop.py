@@ -15,9 +15,9 @@ last_half = []
 
 
 def infer(frame_data, is_mid=False):
-    spectogram = get_spectrogram(frame_data.astype(np.float32) / 32768)
-    spectogram = spectogram[None, :]
-    prediction = model.predict(spectogram)
+    spectrogram = get_spectrogram(frame_data.astype(np.float32) / 32768)
+    spectrogram = spectrogram[None, :]
+    prediction = model.predict(spectrogram)
     sm = tf.nn.softmax(prediction[0])
     idx = np.argmax(sm)
 

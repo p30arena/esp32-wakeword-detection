@@ -9,7 +9,7 @@ spectrogram_ds = waveform_ds.map(
 
 
 def representative_dataset():
-    for input_value, output_value in spectrogram_ds.batch(1).take(100):
+    for input_value, output_value in spectrogram_ds.batch(1):
         yield [input_value]
 
 
