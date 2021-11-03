@@ -75,9 +75,6 @@ def get_model_train(spectrogram_ds, input_shape, num_labels):
     if model_path.exists():
         model = tf.keras.models.load_model(model_path)
     else:
-        norm_layer = layers.Normalization()
-        norm_layer.adapt(spectrogram_ds.map(lambda x, _: x))
-
         model = models.Sequential([
             layers.Input(shape=input_shape),
             layers.Resizing(32, 32),
@@ -100,3 +97,7 @@ def get_model_train(spectrogram_ds, input_shape, num_labels):
 
 def get_model_test():
     return tf.keras.models.load_model(model_path)
+
+
+def get_model_test_tinyml():
+    interpreter = tf.lite.Interpreter(model_path.joinpath('./model.tflite'))
