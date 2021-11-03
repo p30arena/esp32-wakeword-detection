@@ -30,14 +30,13 @@ spectrogram = get_spectrogram(frame_data.astype(np.float32) / 32768)
 # spectrogram = tf.cast(spectrogram * 255, tf.int8)
 spectrogram = tf.image.convert_image_dtype(spectrogram, dtype=tf.int8)
 spectrogram = spectrogram[np.newaxis, ..., np.newaxis]
-print(spectrogram)
 model.set_tensor(input_details[0]['index'], spectrogram)
 model.invoke()
 
 output_data = model.get_tensor(output_details[0]['index'])
 print(output_data)
-# output_data = output_data[0].astype(np.float) / 255
-# print(output_data)
+output_data = output_data[0].astype(np.float) / 255
+print(output_data)
 
-# plt.bar(commands, tf.nn.softmax(output_data))
-# plt.show()
+plt.bar(commands, tf.nn.softmax(output_data))
+plt.show()

@@ -81,12 +81,26 @@ def get_model_train(spectrogram_ds, input_shape, num_labels):
     if model_path.exists():
         model = tf.keras.models.load_model(model_path)
     else:
+        # model = models.Sequential([
+        #     layers.Input(shape=input_shape),
+        #     # layers.Resizing(32, 32),
+        #     layers.Conv2D(8, 3, activation='relu'),
+        #     layers.MaxPooling2D(),
+        #     layers.Dropout(0.25),
+        #     layers.Flatten(),
+        #     layers.Dense(16, activation='relu'),
+        #     layers.Dropout(0.5),
+        #     layers.Dense(num_labels),
+        # ])
         model = models.Sequential([
             layers.Input(shape=input_shape),
-            # layers.Resizing(32, 32),
-            layers.Conv2D(8, 8, activation='relu'),
-            layers.Flatten(),
+            layers.Conv2D(8, 3, activation='relu'),
+            layers.MaxPooling2D(),
             layers.Dropout(0.5),
+            layers.Conv2D(16, 3, activation='relu'),
+            layers.MaxPooling2D(),
+            layers.Dropout(0.5),
+            layers.Flatten(),
             layers.Dense(num_labels),
         ])
         model = tfmot.quantization.keras.quantize_model(model)
