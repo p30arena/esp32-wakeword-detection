@@ -7,10 +7,9 @@
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"
-#include "tensorflow/lite/experimental/microfrontend/lib/frontend.h"
-#include "tensorflow/lite/experimental/microfrontend/lib/frontend_util.h"
 #include "model.h"
 #include "resize.h"
+#include "STFT.h"
 
 #define FREQ 16000
 #define FREQ_HALF 8000
@@ -29,6 +28,12 @@ tflite::MicroInterpreter *interpreter;
 // Input/Output nodes for the network
 TfLiteTensor *input;
 TfLiteTensor *output;
+
+static tflite::ErrorReporter *error_reporter;
+static tflite::MicroErrorReporter micro_error;
+
+// Define ops resolver and error reporting
+static tflite::MicroMutableOpResolver<4> micro_op_resolver(error_reporter);
 
 int8_t *model_input_buffer = nullptr;
 
@@ -54,6 +59,7 @@ void adcWriterTask(void *param)
   int cnt = 0;
   int16_t data[FREQ];
   int16_t last_half_data[FREQ_HALF];
+  int8_t *spectrogram;
   bool first_time = true;
 
   while (true)
@@ -64,12 +70,29 @@ void adcWriterTask(void *param)
     {
       if (cnt == 2)
       {
+        if (first_time)
+        {
+          // TfLiteStatus init_status = InitializeMicroFeatures(error_reporter);
+          // if (init_status != kTfLiteOk)
+          // {
+          //   return;
+          // }
+        }
+
+        size_t num_samples_read;
         if (!first_time)
         {
         }
+        else
+        {
+          // TfLiteStatus generate_status = GenerateMicroFeatures(
+          //     error_reporter, data, FREQ, kFeatureSliceSize,
+          //     spectrogram, &num_samples_read);
+
+          first_time = false;
+        }
 
         cnt = 0;
-        first_time = false;
       }
       else
       {
@@ -120,12 +143,8 @@ void setup_tflite()
   wake_model = tflite::GetModel(model_data);
   Serial.println("Model loaded!");
 
-  static tflite::ErrorReporter *error_reporter;
-  static tflite::MicroErrorReporter micro_error;
   error_reporter = &micro_error;
 
-  // Define ops resolver and error reporting
-  static tflite::MicroMutableOpResolver<4> micro_op_resolver(error_reporter);
   if (micro_op_resolver.AddConv2D() != kTfLiteOk)
   {
     return;
@@ -163,4 +182,32 @@ void setup_tflite()
   Serial.println("Starting inferences... Input a number! ");
 
   model_input_buffer = input->data.int8;
+}
+
+void getSpectrogram(int16_t *buf_in)
+{
+
+  const int ch = 1;
+  const int frame = 255;
+  const int shift = 128;
+
+  STFT process(ch, frame, shift);
+
+  // short buf_in[ch * shift];
+  double **data;
+
+  data = new double *[ch];
+  for (int i = 0; i < ch; i++)
+  {
+    data[i] = new double[frame + 2];
+    memset(data[i], 0, sizeof(double) * (frame + 2));
+  }
+
+  process.stft(buf_in, FREQ, data);
+
+  for (int i = 0; i < ch; i++)
+    delete[] data[i];
+  delete[] data;
+
+  return 0;
 }
