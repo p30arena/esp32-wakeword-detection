@@ -17,19 +17,14 @@ limitations under the License.
 
 #include <cmath>
 
-namespace tflite {
+namespace tflite
+{
 
-#if defined(TF_LITE_USE_GLOBAL_MIN) || defined(__ZEPHYR__)
-inline float TfLiteMin(const float& x, const float& y) {
-  return std::min(x, y);
-}
-#else
-template <class T>
-inline T TfLiteMin(const T& x, const T& y) {
-  return std::fmin(x, y);
-}
-#endif
+  inline float TfLiteMin(const float &x, const float &y)
+  {
+    return std::min(x, y);
+  }
 
-}  // namespace tflite
+} // namespace tflite
 
-#endif  // TENSORFLOW_LITE_KERNELS_INTERNAL_MIN_H_
+#endif // TENSORFLOW_LITE_KERNELS_INTERNAL_MIN_H_

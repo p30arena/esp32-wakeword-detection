@@ -2,12 +2,29 @@
 #include "ADCSampler.h"
 #include "creds.h"
 
-#include <math.h>
-#include "tensorflow/lite/experimental/micro/kernels/all_ops_resolver.h"
-#include "tensorflow/lite/experimental/micro/micro_error_reporter.h"
-#include "tensorflow/lite/experimental/micro/micro_interpreter.h"
+#include "tensorflow/lite/micro/micro_error_reporter.h"
+#include "tensorflow/lite/micro/micro_interpreter.h"
+#include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
+#include "tensorflow/lite/micro/system_setup.h"
+#include "tensorflow/lite/schema/schema_generated.h"
+#include "model.h"
 
 ADCSampler *adcSampler = NULL;
+// Create a memory pool for the nodes in the network
+constexpr int tensor_pool_size = 20 * 1024;
+uint8_t tensor_pool[tensor_pool_size];
+
+// Define the model to be used
+const tflite::Model *wake_model;
+
+// Define the interpreter
+tflite::MicroInterpreter *interpreter;
+
+// Input/Output nodes for the network
+TfLiteTensor *input;
+TfLiteTensor *output;
+
+void setup_tflite();
 
 i2s_config_t adcI2SConfig = {
     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_ADC_BUILT_IN),
@@ -32,16 +49,11 @@ void adcWriterTask(void *param)
     uint32_t ulNotificationValue = ulTaskNotifyTake(pdTRUE, xMaxBlockTime);
     if (ulNotificationValue > 0)
     {
-      if (wifiConnected)
-      {
-        CheckForConnections();
-      }
-
-      if (wifiConnected && RemoteClient.connected())
-      {
-        // Send a packet
-        RemoteClient.write((uint8_t *)sampler->getCapturedAudioBuffer(), sampler->getBufferSizeInBytes());
-      }
+      // if (wifiConnected && RemoteClient.connected())
+      // {
+      //   // Send a packet
+      //   RemoteClient.write((uint8_t *)sampler->getCapturedAudioBuffer(), sampler->getBufferSizeInBytes());
+      // }
     }
   }
 }
@@ -50,6 +62,9 @@ void setup()
 {
   // setCpuFrequencyMhz(240);
   Serial.begin(115200);
+
+  setup_tflite();
+
   adcSampler = new ADCSampler(ADC_UNIT_1, ADC1_CHANNEL_5);
   TaskHandle_t adcWriterTaskHandle;
   xTaskCreatePinnedToCore(adcWriterTask, "ADC Writer Task", 4096, adcSampler, 1, &adcWriterTaskHandle, 1);
@@ -58,4 +73,54 @@ void setup()
 
 void loop()
 {
+}
+
+void setup_tflite()
+{
+  // Load the sample sine model
+  Serial.println("Loading Tensorflow model....");
+  wake_model = tflite::GetModel(model_data);
+  Serial.println("Model loaded!");
+
+  static tflite::ErrorReporter *error_reporter;
+  static tflite::MicroErrorReporter micro_error;
+  error_reporter = &micro_error;
+
+  // Define ops resolver and error reporting
+  static tflite::MicroMutableOpResolver<4> micro_op_resolver(error_reporter);
+  if (micro_op_resolver.AddDepthwiseConv2D() != kTfLiteOk)
+  {
+    return;
+  }
+  if (micro_op_resolver.AddFullyConnected() != kTfLiteOk)
+  {
+    return;
+  }
+  if (micro_op_resolver.AddSoftmax() != kTfLiteOk)
+  {
+    return;
+  }
+  if (micro_op_resolver.AddReshape() != kTfLiteOk)
+  {
+    return;
+  }
+
+  // Instantiate the interpreter
+  static tflite::MicroInterpreter static_interpreter(
+      wake_model, micro_op_resolver, tensor_pool, tensor_pool_size, error_reporter);
+
+  interpreter = &static_interpreter;
+
+  // Allocate the the model's tensors in the memory pool that was created.
+  Serial.println("Allocating tensors to memory pool");
+  if (interpreter->AllocateTensors() != kTfLiteOk)
+  {
+    Serial.println("There was an error allocating the memory...ooof");
+    return;
+  }
+
+  // Define input and output nodes
+  input = interpreter->input(0);
+  output = interpreter->output(0);
+  Serial.println("Starting inferences... Input a number! ");
 }
