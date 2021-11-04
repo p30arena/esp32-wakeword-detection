@@ -8,6 +8,8 @@ from tensorflow.keras import models
 
 import tensorflow_model_optimization as tfmot
 
+from commons import freq
+
 commands = None
 AUTOTUNE = None
 
@@ -41,8 +43,8 @@ def get_waveform_and_label(file_path):
 
 
 def get_spectrogram(waveform):
-    # Padding for files with less than 16000 samples
-    zero_padding = tf.zeros([16000] - tf.shape(waveform), dtype=tf.float32)
+    # Padding for files with less than [freq] samples
+    zero_padding = tf.zeros([freq] - tf.shape(waveform), dtype=tf.float32)
 
     # Concatenate audio with padding so that all audio clips will be of the
     # same length

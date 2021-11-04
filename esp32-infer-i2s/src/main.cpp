@@ -1,18 +1,4 @@
-#include <Arduino.h>
-#include "ADCSampler.h"
-#include "creds.h"
-
-#include "tensorflow/lite/micro/micro_error_reporter.h"
-#include "tensorflow/lite/micro/micro_interpreter.h"
-#include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
-#include "tensorflow/lite/micro/system_setup.h"
-#include "tensorflow/lite/schema/schema_generated.h"
-#include "model.h"
-#include "resize.h"
-#include "STFT.h"
-
-#define FREQ 16000
-#define FREQ_HALF 8000
+#include "main.h"
 
 ADCSampler *adcSampler = NULL;
 // Create a memory pool for the nodes in the network
@@ -70,27 +56,32 @@ void adcWriterTask(void *param)
     {
       if (cnt == 2)
       {
-        if (first_time)
-        {
-          // TfLiteStatus init_status = InitializeMicroFeatures(error_reporter);
-          // if (init_status != kTfLiteOk)
-          // {
-          //   return;
-          // }
-        }
+        Serial.println("1");
+        double **out = getSpectrogram(data);
+        Serial.println("2");
+        freeSpectrogram(out);
+        Serial.println("3");
+        // if (first_time)
+        // {
+        //   // TfLiteStatus init_status = InitializeMicroFeatures(error_reporter);
+        //   // if (init_status != kTfLiteOk)
+        //   // {
+        //   //   return;
+        //   // }
+        // }
 
-        size_t num_samples_read;
-        if (!first_time)
-        {
-        }
-        else
-        {
-          // TfLiteStatus generate_status = GenerateMicroFeatures(
-          //     error_reporter, data, FREQ, kFeatureSliceSize,
-          //     spectrogram, &num_samples_read);
+        // size_t num_samples_read;
+        // if (!first_time)
+        // {
+        // }
+        // else
+        // {
+        //   // TfLiteStatus generate_status = GenerateMicroFeatures(
+        //   //     error_reporter, data, FREQ, kFeatureSliceSize,
+        //   //     spectrogram, &num_samples_read);
 
-          first_time = false;
-        }
+        //   first_time = false;
+        // }
 
         cnt = 0;
       }
@@ -182,32 +173,4 @@ void setup_tflite()
   Serial.println("Starting inferences... Input a number! ");
 
   model_input_buffer = input->data.int8;
-}
-
-void getSpectrogram(int16_t *buf_in)
-{
-
-  const int ch = 1;
-  const int frame = 255;
-  const int shift = 128;
-
-  STFT process(ch, frame, shift);
-
-  // short buf_in[ch * shift];
-  double **data;
-
-  data = new double *[ch];
-  for (int i = 0; i < ch; i++)
-  {
-    data[i] = new double[frame + 2];
-    memset(data[i], 0, sizeof(double) * (frame + 2));
-  }
-
-  process.stft(buf_in, FREQ, data);
-
-  for (int i = 0; i < ch; i++)
-    delete[] data[i];
-  delete[] data;
-
-  return 0;
 }
