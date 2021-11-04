@@ -10,6 +10,10 @@
 #include "tensorflow/lite/experimental/microfrontend/lib/frontend.h"
 #include "tensorflow/lite/experimental/microfrontend/lib/frontend_util.h"
 #include "model.h"
+#include "resize.h"
+
+#define FREQ 16000
+#define FREQ_HALF 8000
 
 ADCSampler *adcSampler = NULL;
 // Create a memory pool for the nodes in the network
@@ -32,7 +36,7 @@ void setup_tflite();
 
 i2s_config_t adcI2SConfig = {
     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_ADC_BUILT_IN),
-    .sample_rate = 16000,
+    .sample_rate = FREQ,
     .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
     .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
     .communication_format = I2S_COMM_FORMAT_I2S_LSB,
@@ -48,12 +52,34 @@ void adcWriterTask(void *param)
   I2SSampler *sampler = (I2SSampler *)param;
   const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100);
   int cnt = 0;
+  int16_t data[FREQ];
+  int16_t last_half_data[FREQ_HALF];
+  bool first_time = true;
+
   while (true)
   {
     // wait for some samples to save
     uint32_t ulNotificationValue = ulTaskNotifyTake(pdTRUE, xMaxBlockTime);
     if (ulNotificationValue > 0)
     {
+      if (cnt == 2)
+      {
+        if (!first_time)
+        {
+        }
+
+        cnt = 0;
+        first_time = false;
+      }
+      else
+      {
+        memcpy(&data[cnt == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
+        if (cnt == 1)
+        {
+          memcpy(last_half_data, sampler->getCapturedAudioBuffer(), FREQ);
+        }
+        cnt++;
+      }
       // int8_t *data = (int8_t *)sampler->getCapturedAudioBuffer();
       // cnt++;
       // int offset = cnt == 1 ? 0 : 8000;
@@ -80,7 +106,7 @@ void setup()
   adcSampler = new ADCSampler(ADC_UNIT_1, ADC1_CHANNEL_5);
   TaskHandle_t adcWriterTaskHandle;
   xTaskCreatePinnedToCore(adcWriterTask, "ADC Writer Task", 4096, adcSampler, 1, &adcWriterTaskHandle, 1);
-  adcSampler->start(I2S_NUM_0, adcI2SConfig, 16000, adcWriterTaskHandle);
+  adcSampler->start(I2S_NUM_0, adcI2SConfig, FREQ, adcWriterTaskHandle);
 }
 
 void loop()
