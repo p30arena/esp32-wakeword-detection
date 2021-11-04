@@ -15,3 +15,7 @@ Useful Links:
 8. https://github.com/espressif/esp-sr/blob/master/wake_word_engine/README.md
 9. https://github.com/espressif/esp-sr/blob/master/wake_word_engine/ESP_Wake_Words_Customization.md
 10. 
+
+* Notes
+
+make -f tensorflow/lite/micro/tools/make/Makefile TARGET=esp generate_hello_world_esp_project
