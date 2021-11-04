@@ -24,7 +24,7 @@ input_details = model.get_input_details()
 output_details = model.get_output_details()
 input_shape = input_details[0]['shape']
 
-for i in range(80):
+for i in range(111):
     audio_binary = tf.io.read_file("out/data/cmd-1/{0}.wav".format(i))
     decoded_audio = decode_audio(audio_binary)
     spectrogram = get_spectrogram(decoded_audio)
