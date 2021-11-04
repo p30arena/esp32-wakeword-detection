@@ -7,6 +7,8 @@
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"
+#include "tensorflow/lite/experimental/microfrontend/lib/frontend.h"
+#include "tensorflow/lite/experimental/microfrontend/lib/frontend_util.h"
 #include "model.h"
 
 ADCSampler *adcSampler = NULL;
@@ -23,6 +25,8 @@ tflite::MicroInterpreter *interpreter;
 // Input/Output nodes for the network
 TfLiteTensor *input;
 TfLiteTensor *output;
+
+int8_t *model_input_buffer = nullptr;
 
 void setup_tflite();
 
@@ -43,16 +47,24 @@ void adcWriterTask(void *param)
 {
   I2SSampler *sampler = (I2SSampler *)param;
   const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100);
+  int cnt = 0;
   while (true)
   {
     // wait for some samples to save
     uint32_t ulNotificationValue = ulTaskNotifyTake(pdTRUE, xMaxBlockTime);
     if (ulNotificationValue > 0)
     {
-      // if (wifiConnected && RemoteClient.connected())
+      // int8_t *data = (int8_t *)sampler->getCapturedAudioBuffer();
+      // cnt++;
+      // int offset = cnt == 1 ? 0 : 8000;
+      // for (int i = 0; i < sampler->getBufferSizeInBytes(); i++)
       // {
-      //   // Send a packet
-      //   RemoteClient.write((uint8_t *)sampler->getCapturedAudioBuffer(), sampler->getBufferSizeInBytes());
+      // }
+
+      // if (cnt == 2)
+      // {
+      //   model_input_buffer[i + offset] = data[i];
+      //   cnt = 0;
       // }
     }
   }
@@ -88,7 +100,7 @@ void setup_tflite()
 
   // Define ops resolver and error reporting
   static tflite::MicroMutableOpResolver<4> micro_op_resolver(error_reporter);
-  if (micro_op_resolver.AddDepthwiseConv2D() != kTfLiteOk)
+  if (micro_op_resolver.AddConv2D() != kTfLiteOk)
   {
     return;
   }
@@ -96,7 +108,7 @@ void setup_tflite()
   {
     return;
   }
-  if (micro_op_resolver.AddSoftmax() != kTfLiteOk)
+  if (micro_op_resolver.AddMaxPool2D() != kTfLiteOk)
   {
     return;
   }
@@ -123,4 +135,6 @@ void setup_tflite()
   input = interpreter->input(0);
   output = interpreter->output(0);
   Serial.println("Starting inferences... Input a number! ");
+
+  model_input_buffer = input->data.int8;
 }
