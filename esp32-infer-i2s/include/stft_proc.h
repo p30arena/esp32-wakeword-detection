@@ -25,24 +25,22 @@ double *hannWindow_(int windowLength)
   return cosineWindow(windowLength, 0.5, 0.5);
 }
 
-void getSpectrogram(int16_t *buf_in, double **data, const int ch = 4, const int frame = 255, const int shift = 128)
+void getSpectrogram(int16_t *buf_in, double **data, const int ch = 1, const int frame = 255, const int shift = 128)
 {
-  // const int fftLength = enclosingPowerOfTwo(frame);
-  // hannWindow_(frame);
   STFT process(ch, frame, shift);
 
   for (int i = 0; i < ch; i++)
   {
-    memset(data[i], 0, sizeof(double) * (4000));
+    memset(data[i], 0, sizeof(double) * (frame + 2));
   }
 
-  // int offset = 0;
-  // int length = 0;
-  // const int step = shift * ch;
-  // while (offset < FREQ)
-  // {
-  //   length = min(FREQ - offset, step);
-  //   process.stft(buf_in, length, data);
-  //   offset += step;
-  // }
+  int offset = 0;
+  int length = 0;
+  const int step = shift * ch;
+  while (offset < FREQ)
+  {
+    length = min(FREQ - offset, step);
+    process.stft(buf_in, length, data);
+    offset += step;
+  }
 }

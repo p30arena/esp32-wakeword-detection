@@ -25,8 +25,6 @@ int8_t *model_input_buffer = nullptr;
 
 int16_t data[FREQ] = {0};
 int16_t last_half_data[FREQ_HALF] = {0};
-double x[4000] = {0};
-double *y[4];
 
 void setup_tflite();
 
@@ -51,10 +49,9 @@ void adcWriterTask(void *param)
   int8_t *spectrogram;
   bool first_time = true;
 
-  y[0] = new double[4000];
-  y[1] = new double[4000];
-  y[2] = new double[4000];
-  y[3] = x;
+  double **x;
+  x = new double *[1];
+  x[0] = new double[255 + 2];
 
   while (true)
   {
@@ -101,7 +98,7 @@ void adcWriterTask(void *param)
         // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
 
         Serial.println("1");
-        getSpectrogram(data, y);
+        getSpectrogram(data, (double **)x);
         Serial.println("2");
         // freeSpectrogram(out);
         // Serial.println("3");
