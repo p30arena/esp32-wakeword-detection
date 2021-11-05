@@ -57,9 +57,45 @@ void adcWriterTask(void *param)
     {
       if (cnt == 2)
       {
-        Serial.println("1");
-        double **out = getSpectrogram(data);
-        Serial.println("2");
+        Serial.println(ESP.getFreeHeap());
+        Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
+        Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+        double **data = new double *[1];
+        // data[0] = (double *)heap_caps_malloc(8 * 16000, MALLOC_CAP_32BIT);
+        data[0] = (double *)heap_caps_malloc(8 * 16000, MALLOC_CAP_8BIT);
+        if (data[0] == NULL)
+        {
+          Serial.println("FUCK ESP32!");
+        }
+        Serial.println(ESP.getFreeHeap());
+        Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
+        Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+        delete[] data[0];
+        delete[] data;
+        // Serial.println(ESP.getFreeHeap());
+        // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
+        // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+        // double **data1 = new double *[1];
+        // double **data2 = new double *[1];
+        // data1[0] = new double[8000];
+        // Serial.println(ESP.getFreeHeap());
+        // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
+        // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+        // data2[0] = new double[8000];
+        // Serial.println(ESP.getFreeHeap());
+        // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
+        // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+        // delete[] data1[0];
+        // delete[] data2[0];
+        // delete[] data1;
+        // delete[] data2;
+        // Serial.println(ESP.getFreeHeap());
+        // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
+        // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+
+        // Serial.println("1");
+        // double **out = getSpectrogram(data);
+        // Serial.println("2");
         // freeSpectrogram(out);
         // Serial.println("3");
         // if (first_time)
