@@ -23,6 +23,9 @@ static tflite::MicroMutableOpResolver<4> micro_op_resolver(error_reporter);
 
 int8_t *model_input_buffer = nullptr;
 
+int16_t data[FREQ] = {0};
+int16_t last_half_data[FREQ_HALF] = {0};
+
 void setup_tflite();
 
 i2s_config_t adcI2SConfig = {
@@ -43,8 +46,6 @@ void adcWriterTask(void *param)
   I2SSampler *sampler = (I2SSampler *)param;
   const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100);
   int cnt = 0;
-  int16_t data[FREQ];
-  int16_t last_half_data[FREQ_HALF];
   int8_t *spectrogram;
   bool first_time = true;
 
@@ -59,8 +60,8 @@ void adcWriterTask(void *param)
         Serial.println("1");
         double **out = getSpectrogram(data);
         Serial.println("2");
-        freeSpectrogram(out);
-        Serial.println("3");
+        // freeSpectrogram(out);
+        // Serial.println("3");
         // if (first_time)
         // {
         //   // TfLiteStatus init_status = InitializeMicroFeatures(error_reporter);
@@ -87,11 +88,15 @@ void adcWriterTask(void *param)
       }
       else
       {
-        memcpy(&data[cnt == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
         if (cnt == 1)
         {
           memcpy(last_half_data, sampler->getCapturedAudioBuffer(), FREQ);
         }
+        else
+        {
+          memcpy(&data[cnt == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
+        }
+
         cnt++;
       }
       // int8_t *data = (int8_t *)sampler->getCapturedAudioBuffer();
@@ -170,7 +175,7 @@ void setup_tflite()
   // Define input and output nodes
   input = interpreter->input(0);
   output = interpreter->output(0);
-  Serial.println("Starting inferences... Input a number! ");
+  Serial.println("Starting inferences...! ");
 
   model_input_buffer = input->data.int8;
 }

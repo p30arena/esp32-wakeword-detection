@@ -27,7 +27,7 @@ double *hannWindow_(int windowLength)
 
 double **getSpectrogram(int16_t *buf_in, const int ch = 1, const int frame = 255, const int shift = 128)
 {
-  const int fftLength = enclosingPowerOfTwo(frame);
+  // const int fftLength = enclosingPowerOfTwo(frame);
   // hannWindow_(frame);
   STFT process(ch, frame, shift);
 
@@ -37,11 +37,19 @@ double **getSpectrogram(int16_t *buf_in, const int ch = 1, const int frame = 255
   data = new double *[ch];
   for (int i = 0; i < ch; i++)
   {
-    data[i] = new double[fftLength];
-    memset(data[i], 0, sizeof(double) * (fftLength));
+    data[i] = new double[frame + 2];
+    memset(data[i], 0, sizeof(double) * (frame + 2));
   }
 
-  process.stft(buf_in, FREQ, data);
+  int offset = 0;
+  int length = 0;
+  const int step = shift * ch;
+  while (offset < FREQ)
+  {
+    length = min(FREQ - offset, step);
+    process.stft(buf_in, length, data);
+    offset += step;
+  }
 
   return data;
 }
