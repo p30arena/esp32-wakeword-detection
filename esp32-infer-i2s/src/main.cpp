@@ -25,6 +25,8 @@ int8_t *model_input_buffer = nullptr;
 
 int16_t data[FREQ] = {0};
 int16_t last_half_data[FREQ_HALF] = {0};
+double x[4000] = {0};
+double *y[4];
 
 void setup_tflite();
 
@@ -49,6 +51,11 @@ void adcWriterTask(void *param)
   int8_t *spectrogram;
   bool first_time = true;
 
+  y[0] = new double[4000];
+  y[1] = new double[4000];
+  y[2] = new double[4000];
+  y[3] = x;
+
   while (true)
   {
     // wait for some samples to save
@@ -60,18 +67,18 @@ void adcWriterTask(void *param)
         Serial.println(ESP.getFreeHeap());
         Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
         Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-        double **data = new double *[1];
-        // data[0] = (double *)heap_caps_malloc(8 * 16000, MALLOC_CAP_32BIT);
-        data[0] = (double *)heap_caps_malloc(8 * 16000, MALLOC_CAP_8BIT);
-        if (data[0] == NULL)
-        {
-          Serial.println("FUCK ESP32!");
-        }
-        Serial.println(ESP.getFreeHeap());
-        Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
-        Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-        delete[] data[0];
-        delete[] data;
+        // double **x = new double *[1];
+        // x[0] = (double *)heap_caps_malloc(8 * 16000, MALLOC_CAP_8BIT);
+        // // data[0] = (double *)multi_heap_malloc(, 8 * 16000);
+        // if (x[0] == NULL)
+        // {
+        //   Serial.println("FUCK ESP32!");
+        // }
+        // Serial.println(ESP.getFreeHeap());
+        // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
+        // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+        // delete[] x[0];
+        // delete[] x;
         // Serial.println(ESP.getFreeHeap());
         // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
         // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
@@ -93,9 +100,9 @@ void adcWriterTask(void *param)
         // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
         // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
 
-        // Serial.println("1");
-        // double **out = getSpectrogram(data);
-        // Serial.println("2");
+        Serial.println("1");
+        getSpectrogram(data, y);
+        Serial.println("2");
         // freeSpectrogram(out);
         // Serial.println("3");
         // if (first_time)
@@ -126,11 +133,11 @@ void adcWriterTask(void *param)
       {
         if (cnt == 1)
         {
-          memcpy(last_half_data, sampler->getCapturedAudioBuffer(), FREQ);
+          // memcpy(last_half_data, sampler->getCapturedAudioBuffer(), FREQ);
         }
         else
         {
-          memcpy(&data[cnt == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
+          // memcpy(&data[cnt == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
         }
 
         cnt++;
