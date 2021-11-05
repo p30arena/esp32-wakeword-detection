@@ -1,4 +1,28 @@
-#include "Ooura_FFT.h"
+#ifndef _H_OOURA_FFT_
+#define _H_OOURA_FFT_
+
+#include <cmath>
+
+class Ooura_FFT
+{
+private:
+  int frame_size;
+  int channels;
+  double **a, **w;
+  int **ip;
+
+public:
+  inline Ooura_FFT(int _frame_size, int _channels);
+  inline ~Ooura_FFT();
+
+  inline void FFT(double **);
+  inline void FFT(double **, int target_channels);
+  inline void iFFT(double **);
+  inline void FFT(double *);
+  inline void iFFT(double *);
+  inline void SingleFFT(double *);
+  inline void SingleiFFT(double *);
+};
 
 /*
   Copyright:
@@ -283,23 +307,23 @@
   w[] and ip[] are compatible with all routines.
 */
 
-inline void cdft(int, int, double *, int *, double *);
-inline void rdft(int, int, double *, int *, double *);
-inline void ddct(int, int, double *, int *, double *);
-inline void ddst(int, int, double *, int *, double *);
-inline void dfct(int, double *, double *, int *, double *);
-inline void dfst(int, double *, double *, int *, double *);
+static void cdft(int, int, double *, int *, double *);
+static void rdft(int, int, double *, int *, double *);
+static void ddct(int, int, double *, int *, double *);
+static void ddst(int, int, double *, int *, double *);
+static void dfct(int, double *, double *, int *, double *);
+static void dfst(int, double *, double *, int *, double *);
 
-inline void makewt(int nw, int *ip, double *w);
-inline void makect(int nc, int *ip, double *c);
-inline void bitrv2(int n, int *ip, double *a);
-inline void cftfsub(int n, double *a, double *w);
-inline void cftbsub(int n, double *a, double *w);
-inline void rftfsub(int n, double *a, int nc, double *c);
-inline void rftbsub(int n, double *a, int nc, double *c);
+static void makewt(int nw, int *ip, double *w);
+static void makect(int nc, int *ip, double *c);
+static void bitrv2(int n, int *ip, double *a);
+static void cftfsub(int n, double *a, double *w);
+static void cftbsub(int n, double *a, double *w);
+static void rftfsub(int n, double *a, int nc, double *c);
+static void rftbsub(int n, double *a, int nc, double *c);
 
-inline void cft1st(int n, double *a, double *w);
-inline void cftmdl(int n, int l, double *a, double *w);
+static void cft1st(int n, double *a, double *w);
+static void cftmdl(int n, int l, double *a, double *w);
 
 inline Ooura_FFT::Ooura_FFT(int _frame_size, int _channels)
 {
@@ -1670,3 +1694,5 @@ inline void dstsub(int n, double *a, int nc, double *c)
   }
   a[m] *= c[0];
 }
+
+#endif
