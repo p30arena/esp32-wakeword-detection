@@ -24,7 +24,6 @@ static tflite::MicroMutableOpResolver<4> micro_op_resolver(error_reporter);
 int8_t *model_input_buffer = nullptr;
 
 int16_t data[FREQ] = {0};
-int16_t last_half_data[FREQ_HALF] = {0};
 
 void setup_tflite();
 
@@ -40,6 +39,57 @@ i2s_config_t adcI2SConfig = {
     .use_apll = false,
     .tx_desc_auto_clear = false,
     .fixed_mclk = 0};
+
+bool predict(double **stft_buffer)
+{
+  getSpectrogram(data, stft_buffer);
+
+  for (int i = 0; i < STFT_OUT_SIZE; i++)
+  {
+    int32_t value = stft_buffer[0][i] * 128 - 128;
+
+    if (value > 127)
+    {
+      value = 127;
+    }
+
+    if (value < -128)
+    {
+      value = -128;
+    }
+
+    stft_buffer[0][i] = value;
+  }
+  for (int i = 0; i < STFT_FRAME_SIZE; i++)
+  {
+    model_input_buffer[i] = stft_buffer[0][i];
+  }
+
+  TfLiteStatus invoke_status = interpreter->Invoke();
+  if (invoke_status != kTfLiteOk)
+  {
+    TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed");
+    return false;
+  }
+
+  double a = output->data.int8[0];
+  double b = output->data.int8[1];
+  softmax2(&a, &b);
+
+  Serial.print("CMD PROB: ");
+  Serial.println(a);
+  Serial.print("OTHER PROB: ");
+  Serial.println(b);
+
+  if (a > b)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
 
 void adcWriterTask(void *param)
 {
@@ -61,89 +111,16 @@ void adcWriterTask(void *param)
     {
       if (cnt == 2)
       {
-        // Serial.println(ESP.getFreeHeap());
-        // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
-        // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-        Serial.println("1");
-        getSpectrogram(data, (double **)x);
-        Serial.println("2");
-        for (int i = 0; i < STFT_OUT_SIZE; i++)
-        {
-          int32_t value = x[0][i] * 128 - 128;
-
-          if (value > 127)
-          {
-            value = 127;
-          }
-
-          if (value < -128)
-          {
-            value = -128;
-          }
-
-          x[0][i] = value;
-        }
-        for (int i = 0; i < STFT_FRAME_SIZE; i++)
-        {
-          model_input_buffer[i] = x[0][i];
-        }
-        Serial.println("3");
-        TfLiteStatus invoke_status = interpreter->Invoke();
-        if (invoke_status != kTfLiteOk)
-        {
-          TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed");
-          return;
-        }
-        Serial.println("4");
-        // if (first_time)
-        // {
-        //   // TfLiteStatus init_status = InitializeMicroFeatures(error_reporter);
-        //   // if (init_status != kTfLiteOk)
-        //   // {
-        //   //   return;
-        //   // }
-        // }
-
-        // size_t num_samples_read;
-        // if (!first_time)
-        // {
-        // }
-        // else
-        // {
-        //   // TfLiteStatus generate_status = GenerateMicroFeatures(
-        //   //     error_reporter, data, FREQ, kFeatureSliceSize,
-        //   //     spectrogram, &num_samples_read);
-
-        //   first_time = false;
-        // }
+        predict(x);
 
         cnt = 0;
       }
       else
       {
-        if (cnt == 1)
-        {
-          // memcpy(last_half_data, sampler->getCapturedAudioBuffer(), FREQ);
-        }
-        else
-        {
-          // memcpy(&data[cnt == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
-        }
+        memcpy(&data[cnt == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
 
         cnt++;
       }
-      // int8_t *data = (int8_t *)sampler->getCapturedAudioBuffer();
-      // cnt++;
-      // int offset = cnt == 1 ? 0 : 8000;
-      // for (int i = 0; i < sampler->getBufferSizeInBytes(); i++)
-      // {
-      // }
-
-      // if (cnt == 2)
-      // {
-      //   model_input_buffer[i + offset] = data[i];
-      //   cnt = 0;
-      // }
     }
   }
 }
@@ -208,7 +185,13 @@ void setup_tflite()
   // Define input and output nodes
   input = interpreter->input(0);
   output = interpreter->output(0);
-  Serial.println("Starting inferences...! ");
+
+  Serial.print("input nbytes: ");
+  Serial.println(input->bytes);
+  Serial.print("output nbytes: ");
+  Serial.println(output->bytes);
 
   model_input_buffer = input->data.int8;
+
+  Serial.println("Starting inferences...! ");
 }

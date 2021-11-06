@@ -51,3 +51,19 @@ void getSpectrogram(int16_t *buf_in, double **data)
     offset += step;
   }
 }
+
+void softmax2(double *a, double *b)
+{
+  int i;
+  double m, sum, constant;
+
+  m = max(*a, *b);
+
+  sum = 0.0;
+  sum += exp(*a - m);
+  sum += exp(*b - m);
+
+  constant = m + log(sum);
+  *a = exp(*a - constant);
+  *b = exp(*b - constant);
+}
