@@ -2,7 +2,7 @@
 #include "STFT.h"
 
 #define STFT_FRAME_SIZE 1024
-#define STFT_OUT_SIZE 1024 + 2
+#define STFT_OUT_SIZE STFT_FRAME_SIZE + 2
 
 double enclosingPowerOfTwo(int value)
 {

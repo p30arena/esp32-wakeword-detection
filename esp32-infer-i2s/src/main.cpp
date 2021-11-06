@@ -44,9 +44,12 @@ bool predict(double **stft_buffer)
 {
   getSpectrogram(data, stft_buffer);
 
+  Serial.print("sample= ");
+  Serial.println(stft_buffer[0][10]);
   for (int i = 0; i < STFT_OUT_SIZE; i++)
   {
     int32_t value = stft_buffer[0][i] * 128 - 128;
+    // int32_t value = stft_buffer[0][i] * 128;
 
     if (value > 127)
     {
@@ -60,6 +63,10 @@ bool predict(double **stft_buffer)
 
     stft_buffer[0][i] = value;
   }
+
+  Serial.print("sample= ");
+  Serial.println(stft_buffer[0][10]);
+
   for (int i = 0; i < STFT_FRAME_SIZE; i++)
   {
     model_input_buffer[i] = stft_buffer[0][i];

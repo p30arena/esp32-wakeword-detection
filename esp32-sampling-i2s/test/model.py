@@ -50,8 +50,9 @@ def get_spectrogram(waveform):
     # same length
     waveform = tf.cast(waveform, tf.float32)
     equal_length = tf.concat([waveform, zero_padding], 0)
+    # default was 255 and 128
     spectrogram = tf.signal.stft(
-        equal_length, frame_length=255, frame_step=128)
+        equal_length, frame_length=64, frame_step=512)
 
     spectrogram = tf.abs(spectrogram)
 
