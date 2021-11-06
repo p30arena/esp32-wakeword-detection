@@ -51,7 +51,7 @@ void adcWriterTask(void *param)
 
   double **x;
   x = new double *[1];
-  x[0] = new double[255 + 2];
+  x[0] = new double[STFT_OUT_SIZE];
 
   while (true)
   {
@@ -61,47 +61,40 @@ void adcWriterTask(void *param)
     {
       if (cnt == 2)
       {
-        Serial.println(ESP.getFreeHeap());
-        Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
-        Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-        // double **x = new double *[1];
-        // x[0] = (double *)heap_caps_malloc(8 * 16000, MALLOC_CAP_8BIT);
-        // // data[0] = (double *)multi_heap_malloc(, 8 * 16000);
-        // if (x[0] == NULL)
-        // {
-        //   Serial.println("FUCK ESP32!");
-        // }
         // Serial.println(ESP.getFreeHeap());
         // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
         // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-        // delete[] x[0];
-        // delete[] x;
-        // Serial.println(ESP.getFreeHeap());
-        // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
-        // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-        // double **data1 = new double *[1];
-        // double **data2 = new double *[1];
-        // data1[0] = new double[8000];
-        // Serial.println(ESP.getFreeHeap());
-        // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
-        // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-        // data2[0] = new double[8000];
-        // Serial.println(ESP.getFreeHeap());
-        // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
-        // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-        // delete[] data1[0];
-        // delete[] data2[0];
-        // delete[] data1;
-        // delete[] data2;
-        // Serial.println(ESP.getFreeHeap());
-        // Serial.println(heap_caps_get_free_size(MALLOC_CAP_8BIT));
-        // Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-
         Serial.println("1");
         getSpectrogram(data, (double **)x);
         Serial.println("2");
-        // freeSpectrogram(out);
-        // Serial.println("3");
+        for (int i = 0; i < STFT_OUT_SIZE; i++)
+        {
+          int32_t value = x[0][i] * 128 - 128;
+
+          if (value > 127)
+          {
+            value = 127;
+          }
+
+          if (value < -128)
+          {
+            value = -128;
+          }
+
+          x[0][i] = value;
+        }
+        for (int i = 0; i < STFT_FRAME_SIZE; i++)
+        {
+          model_input_buffer[i] = x[0][i];
+        }
+        Serial.println("3");
+        TfLiteStatus invoke_status = interpreter->Invoke();
+        if (invoke_status != kTfLiteOk)
+        {
+          TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed");
+          return;
+        }
+        Serial.println("4");
         // if (first_time)
         // {
         //   // TfLiteStatus init_status = InitializeMicroFeatures(error_reporter);
@@ -157,7 +150,7 @@ void adcWriterTask(void *param)
 
 void setup()
 {
-  // setCpuFrequencyMhz(240);
+  setCpuFrequencyMhz(240);
   Serial.begin(115200);
 
   setup_tflite();

@@ -1,6 +1,9 @@
 #include "commons.h"
 #include "STFT.h"
 
+#define STFT_FRAME_SIZE 1024
+#define STFT_OUT_SIZE 1024 + 2
+
 double enclosingPowerOfTwo(int value)
 {
   // Return 2**N for integer N such that 2**N >= value.
@@ -25,13 +28,17 @@ double *hannWindow_(int windowLength)
   return cosineWindow(windowLength, 0.5, 0.5);
 }
 
-void getSpectrogram(int16_t *buf_in, double **data, const int ch = 1, const int frame = 255, const int shift = 128)
+void getSpectrogram(int16_t *buf_in, double **data)
 {
-  STFT process(ch, frame, shift);
+  const int ch = 1;
+  const int rate = FREQ;
+  const int shift = 128;
+
+  STFT process(ch, STFT_FRAME_SIZE, shift);
 
   for (int i = 0; i < ch; i++)
   {
-    memset(data[i], 0, sizeof(double) * (frame + 2));
+    memset(data[i], 0, sizeof(double) * (STFT_OUT_SIZE));
   }
 
   int offset = 0;
@@ -40,7 +47,7 @@ void getSpectrogram(int16_t *buf_in, double **data, const int ch = 1, const int 
   while (offset < FREQ)
   {
     length = min(FREQ - offset, step);
-    process.stft(buf_in, length, data);
+    process.stft(&buf_in[offset], length, data);
     offset += step;
   }
 }
