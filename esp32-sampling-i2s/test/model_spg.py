@@ -33,11 +33,16 @@ def get_label(file_path):
 
 def get_file_and_label(file_path):
     label = get_label(file_path)
-    tf.read_file()
-    sess = tf.compat.v1.Session()
-    with sess.as_default():
-        with open(file_path.eval(), 'rb') as f:
-            return decode_spg(f.read()), label
+    with open(file_path.numpy().decode('ascii'), 'rb') as f:
+        return decode_spg(f.read()), label
+
+
+def tf_get_file_and_label(file_path):
+    a, b = tf.py_function(func=get_file_and_label, inp=[
+                          file_path], Tout=[tf.float32, tf.string])
+    a.set_shape((32, 32))
+    b.set_shape(())
+    return a, b
 
 
 def get_spg_and_label_id(spectrogram, label):
@@ -48,7 +53,7 @@ def get_spg_and_label_id(spectrogram, label):
 
 def preprocess_dataset(files):
     files_ds = tf.data.Dataset.from_tensor_slices(files)
-    output_ds = files_ds.map(get_file_and_label,
+    output_ds = files_ds.map(tf_get_file_and_label,
                              num_parallel_calls=AUTOTUNE)
     output_ds = output_ds.map(
         get_spg_and_label_id,  num_parallel_calls=AUTOTUNE)

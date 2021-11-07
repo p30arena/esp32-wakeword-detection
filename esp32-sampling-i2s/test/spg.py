@@ -51,11 +51,18 @@ if __name__ == "__main__":
         cax = ax.imshow(mfcc, interpolation='nearest',
                         cmap=cm.coolwarm, origin='lower')
 
-    for i in range(3):
-        fig, axes = plt.subplots(2, figsize=(12, 8))
-        plot_mfcc(get_mfcc(
-            "out/data/cmd-1/{0}.wav".format(i)).numpy(), axes[0])
-        plot_mfcc(get_mfcc(
-            "out/data/other-1/{0}.wav".format(i)).numpy(), axes[1])
-        axes[0].set_title('Spectrogram')
-        plt.show()
+    rows = 3
+    cols = 3
+    n = rows*cols
+    fig, axes = plt.subplots(rows, cols, figsize=(10, 10))
+    for i in range(n):
+        r = i // cols
+        c = i % cols
+        ax = axes[r][c]
+        spectrogram = get_spectrogram(
+            "out/data/cmd-1/{0}.wav".format(i) if i % 2 == 0 else "out/data/other-1/{0}.wav".format(i))
+        plot_spectrogram(np.squeeze(spectrogram.numpy()), ax)
+        ax.set_title("cmd" if i % 2 == 0 else "other")
+        ax.axis('off')
+
+    plt.show()

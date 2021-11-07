@@ -5,7 +5,7 @@ import numpy as np
 import seaborn as sns
 import tensorflow as tf
 
-from model_spg import model_path, get_model_train, get_file_and_label, set_params
+from model_spg import model_path, get_model_train, tf_get_file_and_label, set_params
 from model_spg import preprocess_dataset, get_spg_and_label_id
 
 
@@ -14,14 +14,14 @@ seed = 42
 tf.random.set_seed(seed)
 np.random.seed(seed)
 
-data_dir = pathlib.Path('out/data')
+data_dir = pathlib.Path('out/data-spg')
 assert(data_dir.exists())
 
 commands = np.array(tf.io.gfile.listdir(str(data_dir)))
 commands = commands[commands != 'README.md']
 print('Commands:', commands)
 
-filenames = tf.io.gfile.glob(str(data_dir) + '/*/*.wav')
+filenames = tf.io.gfile.glob(str(data_dir) + '/*/*.bin')
 filenames = tf.random.shuffle(filenames)
 num_samples = len(filenames)
 print('Number of total examples:', num_samples)
@@ -43,7 +43,7 @@ print('Test set size', len(test_files))
 
 AUTOTUNE = tf.data.AUTOTUNE
 files_ds = tf.data.Dataset.from_tensor_slices(train_files)
-waveform_ds = files_ds.map(get_file_and_label, num_parallel_calls=AUTOTUNE)
+waveform_ds = files_ds.map(tf_get_file_and_label, num_parallel_calls=AUTOTUNE)
 
 set_params(commands, AUTOTUNE)
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         train_ds,
         validation_data=val_ds,
         epochs=EPOCHS,
-        callbacks=tf.keras.callbacks.EarlyStopping(verbose=1, patience=10),
+        callbacks=tf.keras.callbacks.EarlyStopping(verbose=1, patience=30),
     )
 
     model.save(model_path)
