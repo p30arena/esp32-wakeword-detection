@@ -1,0 +1,5 @@
+﻿  stdafx.cpp
+  mfcc-conv.cpp
+  mfcc.h
+  Generating Code...
+  mfcc-conv.vcxproj -> F:\lab\esp32-wakeword-detection\mfcc-conv\Debug\mfcc-conv.exe

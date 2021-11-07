@@ -1,0 +1,7 @@
+﻿  stdafx.cpp
+  mfcc.h
+  mfcc-conv.cpp
+  Generating code
+  All 589 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  mfcc-conv.vcxproj -> F:\lab\esp32-wakeword-detection\mfcc-conv\Release\mfcc-conv.exe

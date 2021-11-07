@@ -48,8 +48,8 @@ bool predict(double **stft_buffer)
   Serial.println(stft_buffer[0][10]);
   for (int i = 0; i < STFT_OUT_SIZE; i++)
   {
-    int32_t value = stft_buffer[0][i] * 128 - 128;
-    // int32_t value = stft_buffer[0][i] * 128;
+    int32_t value = abs(stft_buffer[0][i]) * 128 - 128;
+    // int32_t value = abs(stft_buffer[0][i]) * 128;
 
     if (value > 127)
     {

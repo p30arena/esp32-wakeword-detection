@@ -4,11 +4,11 @@
     <ShowAllFiles>false</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>F:\lab\stft-conv\test\0.wav F:\lab\stft-conv\test\0.bin</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>0 ..\test\0.wav ..\test\0.bin</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>F:\lab\stft-conv\test\0.wav F:\lab\stft-conv\test\0.bin</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>0 ..\test\0.wav ..\test\0.bin</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
