@@ -55,8 +55,8 @@ if __name__ == "__main__":
     val_ds = preprocess_dataset(val_files)
     test_ds = preprocess_dataset(test_files)
 
-    # batch_size = 64
-    batch_size = 32
+    batch_size = 64
+    # batch_size = 32
     train_ds = train_ds.batch(batch_size)
     val_ds = val_ds.batch(batch_size)
 
@@ -70,12 +70,12 @@ if __name__ == "__main__":
 
     model = get_model_train(spectrogram_ds, input_shape, num_labels)
 
-    EPOCHS = 100
+    EPOCHS = 200
     history = model.fit(
         train_ds,
         validation_data=val_ds,
         epochs=EPOCHS,
-        callbacks=tf.keras.callbacks.EarlyStopping(verbose=1, patience=30),
+        callbacks=tf.keras.callbacks.EarlyStopping(verbose=1, patience=100),
     )
 
     model.save(model_path)

@@ -3,6 +3,7 @@
 
 #define STFT_FRAME_SIZE 1024
 #define STFT_OUT_SIZE STFT_FRAME_SIZE + 2
+#define STFT_SHIFT 256
 
 double enclosingPowerOfTwo(int value)
 {
@@ -32,9 +33,8 @@ void getSpectrogram(int16_t *buf_in, double **data)
 {
   const int ch = 1;
   const int rate = FREQ;
-  const int shift = 128;
 
-  STFT process(ch, STFT_FRAME_SIZE, shift);
+  STFT process(ch, STFT_FRAME_SIZE, STFT_SHIFT);
 
   for (int i = 0; i < ch; i++)
   {
@@ -43,7 +43,7 @@ void getSpectrogram(int16_t *buf_in, double **data)
 
   int offset = 0;
   int length = 0;
-  const int step = shift * ch;
+  const int step = STFT_SHIFT * ch;
   while (offset < FREQ)
   {
     length = min(FREQ - offset, step);

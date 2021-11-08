@@ -13,7 +13,8 @@ def decode_spg(buf):
         value = struct.unpack('d', buf[i:i+8])[0]
         result.append(value)
         i += 8
-    return tf.abs(tf.reshape(tf.convert_to_tensor(np.array(result), dtype=tf.float32), (32, 32)))
+    result = np.reshape(np.abs(np.array(result)), (32, 32))
+    return tf.convert_to_tensor(result, dtype=tf.float32)
 
 
 def get_spectrogram(f):
@@ -55,9 +56,11 @@ if __name__ == "__main__":
     cols = 3
     n = rows*cols
     fig, axes = plt.subplots(rows, cols, figsize=(10, 10))
-    for i in range(n):
-        r = i // cols
-        c = i % cols
+    idx = 0
+    for i in range(9, 18):
+        r = idx // cols
+        c = idx % cols
+        idx += 1
         ax = axes[r][c]
         spectrogram = get_spectrogram(
             "out/data/cmd-1/{0}.wav".format(i) if i % 2 == 0 else "out/data/other-1/{0}.wav".format(i))
