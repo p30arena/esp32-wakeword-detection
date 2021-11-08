@@ -40,7 +40,7 @@ def get_mfcc(f):
 
 
 if __name__ == "__main__":
-    def plot_spectrogram(spectrogram, ax):
+    def plot_spectrogram(spectrogram, ax: plt.Axes):
         log_spec = np.log(spectrogram.T+np.finfo(float).eps)
         height = log_spec.shape[0]
         width = log_spec.shape[1]
@@ -57,14 +57,14 @@ if __name__ == "__main__":
     n = rows*cols
     fig, axes = plt.subplots(rows, cols, figsize=(10, 10))
     idx = 0
-    for i in range(9, 18):
+    for i in range(n):
         r = idx // cols
         c = idx % cols
         idx += 1
         ax = axes[r][c]
         spectrogram = get_spectrogram(
             "out/data/cmd-1/{0}.wav".format(i) if i % 2 == 0 else "out/data/other-1/{0}.wav".format(i))
-        plot_spectrogram(np.squeeze(spectrogram.numpy()), ax)
+        plot_spectrogram(spectrogram.numpy(), ax)
         ax.set_title("cmd" if i % 2 == 0 else "other")
         ax.axis('off')
 
