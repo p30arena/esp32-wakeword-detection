@@ -106,9 +106,7 @@ void adcWriterTask(void *param)
   int8_t *spectrogram;
   bool first_time = true;
 
-  double **x;
-  x = new double *[1];
-  x[0] = new double[STFT_OUT_SIZE];
+  double **x = getSPGBuffer();
 
   while (true)
   {

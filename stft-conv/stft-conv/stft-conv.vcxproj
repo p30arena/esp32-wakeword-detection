@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="resize_spg.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="STFT-master\cpp\HannWindow.h" />
     <ClInclude Include="STFT-master\cpp\Ooura_FFT.h" />

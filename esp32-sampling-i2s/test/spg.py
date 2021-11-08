@@ -13,12 +13,10 @@ def decode_spg(buf):
         value = struct.unpack('d', buf[i:i+8])[0]
         result.append(value)
         i += 8
-    # result = np.reshape(np.abs(np.array(result)), (232, 128))
-    result = np.reshape(np.abs(np.array(result)), (128, 128))
-    result = tf.image.resize(result[..., None], (32, 32))
-    return tf.squeeze(result, axis=2)
-    # result = np.reshape(np.abs(np.array(result)), (32, 32))
-    # return tf.convert_to_tensor(result, dtype=tf.float32)
+    return tf.convert_to_tensor(np.reshape(np.abs(np.array(result)), (32, 32)), dtype=tf.float32)
+    # result = np.reshape(np.abs(np.array(result)), (128, 128))
+    # result = tf.image.resize(result[..., None], (32, 32))
+    # return tf.squeeze(result, axis=2)
 
 
 def get_spectrogram(f):
