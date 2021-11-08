@@ -10,7 +10,7 @@ typedef struct
 
 uint32_t getpixel(image_t *image, unsigned int x, unsigned int y)
 {
-	return (uint32_t)(image->pixels[(y * image->w) + x] * 128);
+	return (uint32_t)(image->pixels[(y * image->w) + x] * 256);
 }
 
 float max(float a, float b) { return (a < b) ? a : b; };
@@ -22,7 +22,7 @@ float blerp(float c00, float c10, float c01, float c11, float tx, float ty)
 
 void putpixel(image_t *image, unsigned int x, unsigned int y, uint32_t color)
 {
-	image->pixels[(y * image->w) + x] = color / 128.0;
+	image->pixels[(y * image->w) + x] = color / 256.0f;
 }
 
 void resize(image_t *src, image_t *dst, int newWidth, int newHeight)
