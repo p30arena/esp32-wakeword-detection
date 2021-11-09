@@ -11,4 +11,3 @@
 #include "resize_spg.h"
 #include "commons.h"
 #include "stft_proc.h"
-#include "spg.h"

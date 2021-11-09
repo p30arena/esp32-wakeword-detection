@@ -1,5 +1,7 @@
 #define SPG_N_BLOCKS 32
 #define SPG_BLOCK_SIZE 512
+#define SPG_IMG_W 32
+#define SPG_IMG_SIZE (SPG_IMG_W * SPG_IMG_W)
 
 static double o_1[SPG_BLOCK_SIZE] = {0};
 static double o_2[SPG_BLOCK_SIZE] = {0};
@@ -17,6 +19,7 @@ static double o_13[SPG_BLOCK_SIZE] = {0};
 static double o_14[SPG_BLOCK_SIZE] = {0};
 
 double **spg_buffer;
+double *spg_img_buffer;
 
 void initSPGBuffer()
 {
@@ -41,6 +44,8 @@ void initSPGBuffer()
   spg_buffer[29] = o_12;
   spg_buffer[30] = o_13;
   spg_buffer[31] = o_14;
+
+  spg_img_buffer = new double[SPG_IMG_SIZE];
 }
 
 void zeroSPGBuffer()
@@ -49,4 +54,6 @@ void zeroSPGBuffer()
   {
     memset(spg_buffer[i], 0, sizeof(double) * SPG_BLOCK_SIZE);
   }
+
+  memset(spg_img_buffer, 0, sizeof(double) * SPG_IMG_SIZE);
 }

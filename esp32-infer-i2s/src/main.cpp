@@ -43,7 +43,7 @@ i2s_config_t adcI2SConfig = {
 bool predict()
 {
   zeroSPGBuffer();
-  getSpectrogram(data, spg_buffer);
+  getSpectrogram(data);
 
   Serial.print("before= ");
   Serial.println(spg_buffer[0][10]);
