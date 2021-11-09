@@ -17,8 +17,8 @@ void resize(image_t *src, image_t *dst, int newWidth, int newHeight)
 {
 	double           sr = 0.0;               // row scale
 	double           sc = 0.0;               // column scale
-	size_t          height = 0;
-	size_t          width = 0;
+	int          height = 0;
+	int          width = 0;
 
 	height = src->h;
 	width = src->w;
@@ -27,17 +27,17 @@ void resize(image_t *src, image_t *dst, int newWidth, int newHeight)
 
 
 	double rf = 0.0;
-	for (size_t rNew = 0; rNew < newHeight; rNew++, rf += sr)
+	for (int rNew = 0; rNew < newHeight; rNew++, rf += sr)
 	{
-		size_t r = (size_t)rf;
+		int r = (int)rf;
 		r = (r > height - 2) ? height - 2 : r;
 		double deltaR = rf - r;
 		double oneMinusDeltaR = 1.0 - deltaR;
 
 		double cf = 0.0;
-		for (size_t cNew = 0; cNew < newWidth; cNew++, cf += sc)
+		for (int cNew = 0; cNew < newWidth; cNew++, cf += sc)
 		{
-			size_t c = (size_t)cf;
+			int c = (int)cf;
 			c = (c > width - 2) ? width - 2 : c;
 			double deltaC = cf - c;
 			double w1 = oneMinusDeltaR * (1.0 - deltaC);
