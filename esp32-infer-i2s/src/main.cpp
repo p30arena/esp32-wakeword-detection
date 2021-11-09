@@ -96,6 +96,14 @@ bool predict()
   Serial.println(a);
   Serial.print("OTHER PROB: ");
   Serial.println(b);
+  Serial.println("\n\n");
+
+  if (a > b)
+  {
+    Serial.println("I'm at your service!");
+    Serial.println("abreman.ir");
+    Serial.println('\n');
+  }
 
   if (a > b)
   {
