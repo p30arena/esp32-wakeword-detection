@@ -24,6 +24,7 @@ static tflite::MicroMutableOpResolver<4> micro_op_resolver(error_reporter);
 int8_t *model_input_buffer = nullptr;
 
 int16_t data[FREQ] = {0};
+int16_t data_half[FREQ_HALF] = {0};
 
 void setup_tflite();
 
@@ -50,10 +51,10 @@ void dump_d(double *b, int len)
   Serial.println();
 }
 
-bool predict()
+bool predict(bool isMid)
 {
   zeroSPGBuffer();
-  getSpectrogram(data);
+  getSpectrogram(isMid ? data_half : data);
 
   for (int i = 0; i < SPG_IMG_SIZE; i++)
   {
@@ -96,17 +97,15 @@ bool predict()
   Serial.println(a);
   Serial.print("OTHER PROB: ");
   Serial.println(b);
-  Serial.println("\n\n");
+  Serial.println();
 
   if (a > b)
   {
+    Serial.println('\n');
     Serial.println("I'm at your service!");
     Serial.println("abreman.ir");
     Serial.println('\n');
-  }
 
-  if (a > b)
-  {
     return true;
   }
   else
@@ -120,8 +119,9 @@ void adcWriterTask(void *param)
   I2SSampler *sampler = (I2SSampler *)param;
   const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100);
   int cnt = 0;
-  int8_t *spectrogram;
+  int cnt_mid = 0;
   bool first_time = true;
+  int8_t *spectrogram;
 
   initSPGBuffer();
 
@@ -131,9 +131,34 @@ void adcWriterTask(void *param)
     uint32_t ulNotificationValue = ulTaskNotifyTake(pdTRUE, xMaxBlockTime);
     if (ulNotificationValue > 0)
     {
+      bool mid_pred_res = false;
+
+      if (!first_time)
+      {
+        if (cnt_mid == 2)
+        {
+          mid_pred_res = predict(true);
+
+          cnt_mid = 0;
+        }
+        else
+        {
+          memcpy(&data_half[cnt_mid == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
+
+          cnt_mid++;
+        }
+      }
+      else
+      {
+        first_time = false;
+      }
+
       if (cnt == 2)
       {
-        predict();
+        if (!mid_pred_res)
+        {
+          predict(false);
+        }
 
         cnt = 0;
       }
