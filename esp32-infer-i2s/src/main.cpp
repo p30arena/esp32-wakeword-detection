@@ -40,6 +40,16 @@ i2s_config_t adcI2SConfig = {
     .tx_desc_auto_clear = false,
     .fixed_mclk = 0};
 
+void dump_d(double *b, int len)
+{
+  for (int i = 0; i < len; i++)
+  {
+    Serial.print(b[i], 4);
+    Serial.print(" ");
+  }
+  Serial.println();
+}
+
 bool predict()
 {
   zeroSPGBuffer();
@@ -76,6 +86,10 @@ bool predict()
 
   double a = output->data.int8[0];
   double b = output->data.int8[1];
+  Serial.print(a);
+  Serial.print(" ");
+  Serial.print(b);
+  Serial.println();
   softmax2(&a, &b);
 
   Serial.print("CMD PROB: ");
