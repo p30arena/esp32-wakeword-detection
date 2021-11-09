@@ -53,7 +53,12 @@ void getSpectrogram(int16_t *buf_in)
   {
     length = min(FREQ - offset, step);
     process.stft(&buf_in[offset], length, data);
-    memcpy(&buf_out[block_offset], data[0], sizeof(double) * length);
+    // memcpy throws error!
+    // memcpy(&buf_out[block_offset], data[0], sizeof(double) * length);
+    for (int i = 0; i < length; i++)
+    {
+      buf_out[block_offset][i] = data[0][i];
+    }
     offset += step;
     block_offset++;
   }

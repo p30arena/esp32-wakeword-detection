@@ -45,12 +45,9 @@ bool predict()
   zeroSPGBuffer();
   getSpectrogram(data);
 
-  Serial.print("before= ");
-  Serial.println(spg_buffer[0][10]);
-  for (int i = 0; i < STFT_OUT_SIZE; i++)
+  for (int i = 0; i < SPG_IMG_SIZE; i++)
   {
-    // int32_t value = abs(spg_buffer[0][i]) * 128 - 128;
-    int32_t value = abs(spg_buffer[0][i]) * 128;
+    int8_t value = spg_img_buffer[i] * 255 - 128;
 
     if (value > 127)
     {
@@ -62,15 +59,12 @@ bool predict()
       value = -128;
     }
 
-    spg_buffer[0][i] = value;
+    spg_img_buffer[i] = value;
   }
 
-  Serial.print("after= ");
-  Serial.println(spg_buffer[0][10]);
-
-  for (int i = 0; i < STFT_FRAME_SIZE; i++)
+  for (int i = 0; i < SPG_IMG_SIZE; i++)
   {
-    model_input_buffer[i] = spg_buffer[0][i];
+    model_input_buffer[i] = (int8_t)spg_img_buffer[i];
   }
 
   TfLiteStatus invoke_status = interpreter->Invoke();
