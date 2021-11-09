@@ -40,16 +40,17 @@ i2s_config_t adcI2SConfig = {
     .tx_desc_auto_clear = false,
     .fixed_mclk = 0};
 
-bool predict(double **stft_buffer)
+bool predict()
 {
-  getSpectrogram(data, stft_buffer);
+  zeroSPGBuffer();
+  getSpectrogram(data, spg_buffer);
 
   Serial.print("before= ");
-  Serial.println(stft_buffer[0][10]);
+  Serial.println(spg_buffer[0][10]);
   for (int i = 0; i < STFT_OUT_SIZE; i++)
   {
-    int32_t value = abs(stft_buffer[0][i] / 32768) * 128 - 128;
-    // int32_t value = abs(stft_buffer[0][i]) * 128;
+    // int32_t value = abs(spg_buffer[0][i]) * 128 - 128;
+    int32_t value = abs(spg_buffer[0][i]) * 128;
 
     if (value > 127)
     {
@@ -61,15 +62,15 @@ bool predict(double **stft_buffer)
       value = -128;
     }
 
-    stft_buffer[0][i] = value;
+    spg_buffer[0][i] = value;
   }
 
   Serial.print("after= ");
-  Serial.println(stft_buffer[0][10]);
+  Serial.println(spg_buffer[0][10]);
 
   for (int i = 0; i < STFT_FRAME_SIZE; i++)
   {
-    model_input_buffer[i] = stft_buffer[0][i];
+    model_input_buffer[i] = spg_buffer[0][i];
   }
 
   TfLiteStatus invoke_status = interpreter->Invoke();
@@ -106,7 +107,7 @@ void adcWriterTask(void *param)
   int8_t *spectrogram;
   bool first_time = true;
 
-  double **x = getSPGBuffer();
+  initSPGBuffer();
 
   while (true)
   {
@@ -116,7 +117,7 @@ void adcWriterTask(void *param)
     {
       if (cnt == 2)
       {
-        predict(x);
+        predict();
 
         cnt = 0;
       }

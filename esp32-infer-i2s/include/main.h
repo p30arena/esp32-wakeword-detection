@@ -8,7 +8,7 @@
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "model.h"
-#include "resize.h"
+#include "resize_spg.h"
 #include "commons.h"
 #include "stft_proc.h"
 #include "spg.h"

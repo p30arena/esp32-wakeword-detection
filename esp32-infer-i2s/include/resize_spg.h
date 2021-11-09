@@ -3,90 +3,62 @@
 typedef struct
 {
   double *pixels;
-  unsigned int w;
-  unsigned int h;
+  uint32_t w;
+  uint32_t h;
 } image_t;
-#define getByte(value, n) (value >> (n * 8) & 0xFF)
 
-uint32_t getpixel(image_t *image, unsigned int x, unsigned int y)
+typedef struct
 {
-  return image->pixels[(y * image->w) + x];
+  double **pixels;
+  uint32_t w;
+  uint32_t h;
+} image_32_512_t;
+
+#define imgWriteChannel(channel, width, r, c, v) \
+  (channel)[(r) * (width) + (c)] = (v)
+
+double imgReadChannel(image_32_512_t *channel, int width, int r, int c)
+{
+  int n = (r) * (width) + (c);
+  int block = n / 512;
+  int pos = n % 512;
+  return channel->pixels[block][pos];
 }
 
-float max(float a, float b) { return (a < b) ? a : b; };
-float lerp(float s, float e, float t) { return s + (e - s) * t; }
-float blerp(float c00, float c10, float c01, float c11, float tx, float ty)
+void resize(image_32_512_t *src, image_t *dst, int newWidth, int newHeight)
 {
-  return lerp(lerp(c00, c10, tx), lerp(c01, c11, tx), ty);
-}
+  double sr = 0.0; // row scale
+  double sc = 0.0; // column scale
+  int height = 0;
+  int width = 0;
 
-void putpixel(image_t *image, unsigned int x, unsigned int y, uint32_t color)
-{
-  image->pixels[(y * image->w) + x] = color;
-}
+  height = src->h;
+  width = src->w;
+  sr = (double)height / (double)newHeight;
+  sc = (double)width / (double)newWidth;
 
-void scale(image_t *src, image_t *dst, float scalex, float scaley)
-{
-  int newWidth = (int)src->w * scalex;
-  int newHeight = (int)src->h * scaley;
-  int x, y;
-  for (x = 0, y = 0; y < newHeight; x++)
+  double rf = 0.0;
+  for (int rNew = 0; rNew < newHeight; rNew++, rf += sr)
   {
-    if (x > newWidth)
-    {
-      x = 0;
-      y++;
-    }
-    //float gx = x / (float)(newWidth) * (src->w - 1);
-    //float gy = y / (float)(newHeight) * (src->h - 1);
-    // Image should be clamped at the edges and not scaled.
-    float gx = max(x / (float)(newWidth) * (src->w) - 0.5f, src->w - 1);
-    float gy = max(y / (float)(newHeight) * (src->h) - 0.5, src->h - 1);
-    int gxi = (int)gx;
-    int gyi = (int)gy;
-    uint32_t result = 0;
-    uint32_t c00 = getpixel(src, gxi, gyi);
-    uint32_t c10 = getpixel(src, gxi + 1, gyi);
-    uint32_t c01 = getpixel(src, gxi, gyi + 1);
-    uint32_t c11 = getpixel(src, gxi + 1, gyi + 1);
-    uint8_t i;
-    for (i = 0; i < 3; i++)
-    {
-      //((uint8_t*)&result)[i] = blerp( ((uint8_t*)&c00)[i], ((uint8_t*)&c10)[i], ((uint8_t*)&c01)[i], ((uint8_t*)&c11)[i], gxi - gx, gyi - gy); // this is shady
-      result |= (uint8_t)blerp(getByte(c00, i), getByte(c10, i), getByte(c01, i), getByte(c11, i), gx - gxi, gy - gyi) << (8 * i);
-    }
-    putpixel(dst, x, y, result);
-  }
-}
+    int r = (int)rf;
+    r = (r > height - 2) ? height - 2 : r;
+    double deltaR = rf - r;
+    double oneMinusDeltaR = 1.0 - deltaR;
 
-void resize(image_t *src, image_t *dst, int newWidth, int newHeight)
-{
-  int x, y;
-  for (x = 0, y = 0; y < newHeight; x++)
-  {
-    if (x > newWidth)
+    double cf = 0.0;
+    for (int cNew = 0; cNew < newWidth; cNew++, cf += sc)
     {
-      x = 0;
-      y++;
+      int c = (int)cf;
+      c = (c > width - 2) ? width - 2 : c;
+      double deltaC = cf - c;
+      double w1 = oneMinusDeltaR * (1.0 - deltaC);
+      double w2 = deltaR * (1.0 - deltaC);
+      double w3 = oneMinusDeltaR * deltaC;
+      double w4 = deltaR * deltaC;
+
+      double v = imgReadChannel(src, width, r, c) * w1 + imgReadChannel(src, width, r + 1, c) * w2 + imgReadChannel(src, width, r, c + 1) * w3 + imgReadChannel(src, width, r + 1, c + 1) * w4;
+
+      imgWriteChannel(dst->pixels, newWidth, rNew, cNew, v);
     }
-    //float gx = x / (float)(newWidth) * (src->w - 1);
-    //float gy = y / (float)(newHeight) * (src->h - 1);
-    // Image should be clamped at the edges and not scaled.
-    float gx = max(x / (float)(newWidth) * (src->w) - 0.5f, src->w - 1);
-    float gy = max(y / (float)(newHeight) * (src->h) - 0.5, src->h - 1);
-    int gxi = (int)gx;
-    int gyi = (int)gy;
-    uint32_t result = 0;
-    uint32_t c00 = getpixel(src, gxi, gyi);
-    uint32_t c10 = getpixel(src, gxi + 1, gyi);
-    uint32_t c01 = getpixel(src, gxi, gyi + 1);
-    uint32_t c11 = getpixel(src, gxi + 1, gyi + 1);
-    uint8_t i;
-    for (i = 0; i < 3; i++)
-    {
-      //((uint8_t*)&result)[i] = blerp( ((uint8_t*)&c00)[i], ((uint8_t*)&c10)[i], ((uint8_t*)&c01)[i], ((uint8_t*)&c11)[i], gxi - gx, gyi - gy); // this is shady
-      result |= (uint8_t)blerp(getByte(c00, i), getByte(c10, i), getByte(c01, i), getByte(c11, i), gx - gxi, gy - gyi) << (8 * i);
-    }
-    putpixel(dst, x, y, result);
   }
 }
