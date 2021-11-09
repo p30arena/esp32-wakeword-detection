@@ -14,7 +14,8 @@ def decode_spg(buf):
         result.append(value)
         i += 8
     return tf.convert_to_tensor(np.reshape(np.array(result), (32, 32)), dtype=tf.float32)
-    # result = np.reshape(np.abs(np.array(result)), (128, 128))
+    # result = np.reshape(np.abs(np.array(result)), (125, 128))
+    # return tf.convert_to_tensor(result, dtype=tf.float16)
     # result = tf.image.resize(result[..., None], (32, 32))
     # return tf.squeeze(result, axis=2)
 
