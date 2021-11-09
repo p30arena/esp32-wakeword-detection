@@ -26,6 +26,9 @@ int8_t *model_input_buffer = nullptr;
 int16_t data[FREQ] = {0};
 int16_t data_half[FREQ_HALF] = {0};
 
+bool wait_v = false;
+unsigned long wait_t = 0UL;
+
 void setup_tflite();
 
 i2s_config_t adcI2SConfig = {
@@ -53,6 +56,11 @@ void dump_d(double *b, int len)
 
 bool predict(bool isMid)
 {
+  if (wait_v && millis() - wait_t < 3000)
+  {
+    return true;
+  }
+
   zeroSPGBuffer();
   getSpectrogram(isMid ? data_half : data);
 
@@ -105,6 +113,9 @@ bool predict(bool isMid)
     Serial.println("I'm at your service!");
     Serial.println("abreman.ir");
     Serial.println('\n');
+
+    wait_v = true;
+    wait_t = millis();
 
     return true;
   }
