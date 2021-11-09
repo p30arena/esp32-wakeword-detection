@@ -70,12 +70,12 @@ if __name__ == "__main__":
 
     model = get_model_train(spectrogram_ds, input_shape, num_labels)
 
-    EPOCHS = 200
+    EPOCHS = 100
     history = model.fit(
         train_ds,
         validation_data=val_ds,
         epochs=EPOCHS,
-        callbacks=tf.keras.callbacks.EarlyStopping(verbose=1, patience=100),
+        callbacks=tf.keras.callbacks.EarlyStopping(verbose=1, patience=30),
     )
 
     model.save(model_path)
