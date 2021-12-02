@@ -70,6 +70,25 @@ if __name__ == "__main__":
 
     model = get_model_train(spectrogram_ds, input_shape, num_labels)
 
+    # test_loss, test_acc = model.evaluate(val_ds, verbose=2)
+
+    # print('\nVal accuracy:', test_acc)
+
+    # test_audio = []
+    # test_labels = []
+
+    # for audio, label in test_ds:
+    #     test_audio.append(audio.numpy())
+    #     test_labels.append(label.numpy())
+
+    # test_audio = tf.convert_to_tensor(test_audio)
+    # test_labels = tf.convert_to_tensor(test_labels)
+
+    # test_loss, test_acc = model.evaluate(test_audio, test_labels, verbose=2)
+
+    # print('\nTest accuracy:', test_acc)
+    # exit()
+
     EPOCHS = 100
     history = model.fit(
         train_ds,

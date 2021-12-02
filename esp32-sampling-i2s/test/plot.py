@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-with open('out/out.txt', 'r') as f:
+with open('out/data/other-1/50.txt', 'r') as f:
     lines = f.readlines()
     x = []
     y = []
