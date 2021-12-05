@@ -31,9 +31,8 @@ void normalize(double *b, int len)
   }
 }
 
-void getSpectrogram(int16_t *buf_in)
+void getSpectrogram(int16_t *buf_in, int16_t *buf_2_in, bool use_second_buffer = false)
 {
-  const int rate = FREQ;
   double **data;
   double **buf_out = spg_buffer;
   double *buf_img = spg_img_buffer;
@@ -52,7 +51,7 @@ void getSpectrogram(int16_t *buf_in)
   while (offset < FREQ)
   {
     length = min(FREQ - offset, step);
-    process.stft(&buf_in[offset], length, data);
+    process.stft((offset < FREQ_HALF && use_second_buffer) ? &buf_2_in[offset] : &buf_in[offset], length, data);
     // memcpy throws error!
     // memcpy(&buf_out[block_offset], data[0], sizeof(double) * length);
     for (int i = 0; i < length; i++)
@@ -75,7 +74,6 @@ void getSpectrogram(int16_t *buf_in)
 
 void softmax2(double *a, double *b)
 {
-  int i;
   double m, sum, constant;
 
   m = max(*a, *b);

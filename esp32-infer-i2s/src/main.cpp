@@ -24,7 +24,7 @@ static tflite::MicroMutableOpResolver<4> micro_op_resolver(error_reporter);
 int8_t *model_input_buffer = nullptr;
 
 int16_t data[FREQ] = {0};
-int16_t data_half[FREQ_HALF] = {0};
+int16_t prev_data_half[FREQ_HALF] = {0};
 
 bool wait_v = false;
 unsigned long wait_t = 0UL;
@@ -62,7 +62,8 @@ bool predict(bool isMid)
   }
 
   zeroSPGBuffer();
-  getSpectrogram(isMid ? data_half : data);
+  Serial.println(isMid);
+  getSpectrogram(data, prev_data_half, isMid);
 
   for (int i = 0; i < SPG_IMG_SIZE; i++)
   {
@@ -107,7 +108,7 @@ bool predict(bool isMid)
   Serial.println(b);
   Serial.println();
 
-  if (a > b)
+  if (a > 0.98)
   {
     Serial.println('\n');
     Serial.println("I'm at your service!");
@@ -132,7 +133,6 @@ void adcWriterTask(void *param)
   int cnt = 0;
   int cnt_mid = 0;
   bool first_time = true;
-  int8_t *spectrogram;
 
   initSPGBuffer();
 
@@ -144,20 +144,26 @@ void adcWriterTask(void *param)
     {
       bool mid_pred_res = false;
 
+      // Serial.print("cnt: ");
+      // Serial.print(cnt);
+      // Serial.print("cnt_mid: ");
+      // Serial.print(cnt_mid);
+      // Serial.print("first_time: ");
+      // Serial.print(first_time);
+      // Serial.println();
+
       if (!first_time)
       {
-        if (cnt_mid == 2)
+        if (cnt_mid == 1 && cnt == 1)
         {
           mid_pred_res = predict(true);
-
-          cnt_mid = 0;
         }
-        else
-        {
-          memcpy(&data_half[cnt_mid == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
 
-          cnt_mid++;
-        }
+        cnt_mid = 0;
+
+        memcpy(prev_data_half, sampler->getCapturedAudioBuffer(), FREQ);
+
+        cnt_mid++;
       }
       else
       {
@@ -173,12 +179,10 @@ void adcWriterTask(void *param)
 
         cnt = 0;
       }
-      else
-      {
-        memcpy(&data[cnt == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
 
-        cnt++;
-      }
+      memcpy(&data[cnt == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
+
+      cnt++;
     }
   }
 }
