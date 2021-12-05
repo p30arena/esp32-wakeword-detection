@@ -14,7 +14,7 @@ def capture(events: list):
         try:
             n_timeouts = 0
             s.settimeout(3.0)
-            s.connect(('192.168.1.89', 8840))
+            s.connect(('192.168.1.82', 8840))
             events.insert(0, ("on_connected",))
             frame_data = bytes()
 

@@ -51,7 +51,7 @@ void getSpectrogram(int16_t *buf_in, int16_t *buf_2_in, bool use_second_buffer =
   while (offset < FREQ)
   {
     length = min(FREQ - offset, step);
-    process.stft((offset < FREQ_HALF && use_second_buffer) ? &buf_2_in[offset] : &buf_in[offset], length, data);
+    process.stft((offset < FREQ_HALF && use_second_buffer) ? &buf_2_in[offset] : &buf_in[use_second_buffer ? offset - FREQ_HALF : offset], length, data);
     // memcpy throws error!
     // memcpy(&buf_out[block_offset], data[0], sizeof(double) * length);
     for (int i = 0; i < length; i++)

@@ -29,6 +29,8 @@ int16_t prev_data_half[FREQ_HALF] = {0};
 bool wait_v = false;
 unsigned long wait_t = 0UL;
 
+TaskHandle_t inferenceTaskHandle;
+
 void setup_tflite();
 
 i2s_config_t adcI2SConfig = {
@@ -126,61 +128,50 @@ bool predict(bool isMid)
   }
 }
 
-void adcWriterTask(void *param)
+void adcReaderTask(void *param)
 {
   I2SSampler *sampler = (I2SSampler *)param;
-  const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100);
-  int cnt = 0;
-  int cnt_mid = 0;
-  bool first_time = true;
 
   initSPGBuffer();
 
   while (true)
   {
     // wait for some samples to save
+    int samples_read = sampler->read(data, FREQ);
+    if (samples_read == FREQ)
+    {
+      memcpy(prev_data_half, &data[FREQ_HALF], FREQ);
+      xTaskNotify(inferenceTaskHandle, 1, eIncrement);
+    }
+    else
+    {
+      Serial.print("Can't Infer, Samples Read: ");
+      Serial.println(samples_read);
+    }
+  }
+}
+
+void inferenceTask(void *param)
+{
+  const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100);
+  int cnt = 0;
+
+  while (true)
+  {
     uint32_t ulNotificationValue = ulTaskNotifyTake(pdTRUE, xMaxBlockTime);
     if (ulNotificationValue > 0)
     {
       bool mid_pred_res = false;
 
-      // Serial.print("cnt: ");
-      // Serial.print(cnt);
-      // Serial.print("cnt_mid: ");
-      // Serial.print(cnt_mid);
-      // Serial.print("first_time: ");
-      // Serial.print(first_time);
-      // Serial.println();
-
-      if (!first_time)
+      if (cnt > 1)
       {
-        if (cnt_mid == 1 && cnt == 1)
-        {
-          mid_pred_res = predict(true);
-        }
-
-        cnt_mid = 0;
-
-        memcpy(prev_data_half, sampler->getCapturedAudioBuffer(), FREQ);
-
-        cnt_mid++;
-      }
-      else
-      {
-        first_time = false;
+        mid_pred_res = predict(true);
       }
 
-      if (cnt == 2)
+      if (!mid_pred_res)
       {
-        if (!mid_pred_res)
-        {
-          predict(false);
-        }
-
-        cnt = 0;
+        predict(false);
       }
-
-      memcpy(&data[cnt == 0 ? 0 : FREQ_HALF], sampler->getCapturedAudioBuffer(), FREQ);
 
       cnt++;
     }
@@ -194,10 +185,11 @@ void setup()
 
   setup_tflite();
 
-  adcSampler = new ADCSampler(ADC_UNIT_1, ADC1_CHANNEL_5);
-  TaskHandle_t adcWriterTaskHandle;
-  xTaskCreatePinnedToCore(adcWriterTask, "ADC Writer Task", 4096, adcSampler, 1, &adcWriterTaskHandle, 1);
-  adcSampler->start(I2S_NUM_0, adcI2SConfig, FREQ, adcWriterTaskHandle);
+  adcSampler = new ADCSampler(ADC_UNIT_1, ADC1_CHANNEL_5, adcI2SConfig);
+  TaskHandle_t adcReaderTaskHandle;
+  xTaskCreatePinnedToCore(adcReaderTask, "ADC Reader Task", 4096, adcSampler, 1, &adcReaderTaskHandle, 0);
+  xTaskCreatePinnedToCore(inferenceTask, "Inference Task", 4096, NULL, 1, &inferenceTaskHandle, 1);
+  adcSampler->start();
 }
 
 void loop()

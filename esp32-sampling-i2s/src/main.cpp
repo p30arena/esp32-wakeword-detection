@@ -3,11 +3,15 @@
 #include "ADCSampler.h"
 #include "creds.h"
 
+#define SAMPLE_SIZE 16000
+
 boolean wifiConnected = false;
 WiFiServer Server(8840);
 WiFiClient RemoteClient;
 
 ADCSampler *adcSampler = NULL;
+
+unsigned long clientAcceptedAt = 0UL;
 
 i2s_config_t adcI2SConfig = {
     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_ADC_BUILT_IN),
@@ -30,21 +34,23 @@ void adcWriterTask(void *param)
 {
   I2SSampler *sampler = (I2SSampler *)param;
   const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100);
+  int16_t *samples = (int16_t *)malloc(sizeof(uint16_t) * SAMPLE_SIZE);
+
   while (true)
   {
-    // wait for some samples to save
-    uint32_t ulNotificationValue = ulTaskNotifyTake(pdTRUE, xMaxBlockTime);
-    if (ulNotificationValue > 0)
-    {
-      if (wifiConnected)
-      {
-        CheckForConnections();
-      }
 
-      if (wifiConnected && RemoteClient.connected())
+    if (wifiConnected)
+    {
+      CheckForConnections();
+    }
+
+    if (wifiConnected && RemoteClient.connected() && (millis() - clientAcceptedAt) > 200)
+    {
+      int samples_read = sampler->read(samples, SAMPLE_SIZE);
+      if (samples_read == SAMPLE_SIZE)
       {
         // Send a packet
-        RemoteClient.write((uint8_t *)sampler->getCapturedAudioBuffer(), sampler->getBufferSizeInBytes());
+        RemoteClient.write((uint8_t *)samples, sizeof(uint16_t) * SAMPLE_SIZE);
       }
     }
   }
@@ -54,10 +60,10 @@ void setup()
 {
   // setCpuFrequencyMhz(240);
   Serial.begin(115200);
-  adcSampler = new ADCSampler(ADC_UNIT_1, ADC1_CHANNEL_5);
+  adcSampler = new ADCSampler(ADC_UNIT_1, ADC1_CHANNEL_5, adcI2SConfig);
   TaskHandle_t adcWriterTaskHandle;
   xTaskCreatePinnedToCore(adcWriterTask, "ADC Writer Task", 4096, adcSampler, 1, &adcWriterTaskHandle, 1);
-  adcSampler->start(I2S_NUM_0, adcI2SConfig, 16000, adcWriterTaskHandle);
+  adcSampler->start();
 
   connectToWiFi(WIFI_SSID, WIFI_PWD);
 }
@@ -120,6 +126,7 @@ void CheckForConnections()
     {
       Serial.println("Connection accepted");
       RemoteClient = Server.available();
+      clientAcceptedAt = millis();
     }
   }
 }
