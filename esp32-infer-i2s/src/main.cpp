@@ -2,7 +2,7 @@
 
 ADCSampler *adcSampler = NULL;
 // Create a memory pool for the nodes in the network
-constexpr int tensor_pool_size = 20 * 1024;
+constexpr int tensor_pool_size = 25 * 1024;
 uint8_t tensor_pool[tensor_pool_size];
 
 // Define the model to be used
@@ -133,6 +133,7 @@ void adcReaderTask(void *param)
   I2SSampler *sampler = (I2SSampler *)param;
 
   initSPGBuffer();
+  int cnt = 0;
 
   while (true)
   {
@@ -141,6 +142,21 @@ void adcReaderTask(void *param)
     if (samples_read == FREQ)
     {
       xTaskNotify(inferenceTaskHandle, 1, eIncrement);
+
+      bool mid_pred_res = false;
+
+      if (cnt)
+      {
+        mid_pred_res = predict(true);
+      }
+
+      if (!mid_pred_res)
+      {
+        predict(false);
+      }
+
+      memcpy(prev_data_half, &data[FREQ_HALF], FREQ);
+      cnt++;
     }
     else
     {
@@ -160,20 +176,20 @@ void inferenceTask(void *param)
     uint32_t ulNotificationValue = ulTaskNotifyTake(pdTRUE, xMaxBlockTime);
     if (ulNotificationValue > 0)
     {
-      bool mid_pred_res = false;
+      // bool mid_pred_res = false;
 
-      if (cnt)
-      {
-        mid_pred_res = predict(true);
-      }
+      // if (cnt)
+      // {
+      //   mid_pred_res = predict(true);
+      // }
 
-      if (!mid_pred_res)
-      {
-        predict(false);
-      }
+      // if (!mid_pred_res)
+      // {
+      //   predict(false);
+      // }
 
-      memcpy(prev_data_half, &data[FREQ_HALF], FREQ);
-      cnt++;
+      // memcpy(prev_data_half, &data[FREQ_HALF], FREQ);
+      // cnt++;
     }
   }
 }

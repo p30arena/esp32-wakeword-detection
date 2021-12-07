@@ -11,8 +11,8 @@ static double o_5[SPG_BLOCK_SIZE] = {0};
 static double o_6[SPG_BLOCK_SIZE] = {0};
 static double o_7[SPG_BLOCK_SIZE] = {0};
 static double o_8[SPG_BLOCK_SIZE] = {0};
-static double o_9[SPG_BLOCK_SIZE] = {0};
-static double o_10[SPG_BLOCK_SIZE] = {0};
+// static double o_9[SPG_BLOCK_SIZE] = {0};
+// static double o_10[SPG_BLOCK_SIZE] = {0};
 // static double o_11[SPG_BLOCK_SIZE] = {0};
 // static double o_12[SPG_BLOCK_SIZE] = {0};
 // static double o_13[SPG_BLOCK_SIZE] = {0};
@@ -25,21 +25,21 @@ void initSPGBuffer()
 {
   spg_buffer = new double *[SPG_N_BLOCKS];
 
-  for (int i = 0; i < 22; i++)
+  for (int i = 0; i < 24; i++)
   {
     spg_buffer[i] = new double[SPG_BLOCK_SIZE];
   }
 
-  spg_buffer[22] = o_1;
-  spg_buffer[23] = o_2;
-  spg_buffer[24] = o_3;
-  spg_buffer[25] = o_4;
-  spg_buffer[26] = o_5;
-  spg_buffer[27] = o_6;
-  spg_buffer[28] = o_7;
-  spg_buffer[29] = o_8;
-  spg_buffer[30] = o_9;
-  spg_buffer[31] = o_10;
+  spg_buffer[24] = o_1;
+  spg_buffer[25] = o_2;
+  spg_buffer[26] = o_3;
+  spg_buffer[27] = o_4;
+  spg_buffer[28] = o_5;
+  spg_buffer[29] = o_6;
+  spg_buffer[30] = o_7;
+  spg_buffer[31] = o_8;
+  // spg_buffer[31] = o_9;
+  // spg_buffer[31] = o_10;
   // spg_buffer[28] = o_11;
   // spg_buffer[29] = o_12;
   // spg_buffer[30] = o_13;
