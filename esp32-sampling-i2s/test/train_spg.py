@@ -29,12 +29,12 @@ print('Number of examples per label:',
       len(tf.io.gfile.listdir(str(data_dir/commands[0]))))
 print('Example file tensor:', filenames[0])
 
-_80p = round(0.8 * num_samples)
-_10p = round(0.1 * num_samples)
+_90p = round(0.9 * num_samples)
+_5p = round(0.05 * num_samples)
 
-train_files = filenames[:_80p]
-val_files = filenames[_80p: _80p + _10p]
-test_files = filenames[-_10p:]
+train_files = filenames[:_90p]
+val_files = filenames[_90p: _90p + _5p]
+test_files = filenames[-_5p:]
 
 print('Training set size', len(train_files))
 print('Validation set size', len(val_files))
@@ -55,8 +55,9 @@ if __name__ == "__main__":
     val_ds = preprocess_dataset(val_files)
     test_ds = preprocess_dataset(test_files)
 
-    batch_size = 64
+    # batch_size = 64
     # batch_size = 32
+    batch_size = 16
     train_ds = train_ds.batch(batch_size)
     val_ds = val_ds.batch(batch_size)
 
@@ -89,13 +90,25 @@ if __name__ == "__main__":
     # print('\nTest accuracy:', test_acc)
     # exit()
 
-    EPOCHS = 200
+    def lr_scheduler(epoch, lr):
+        if epoch <= 25:
+            return 0.001
+        elif epoch <= 60:
+            return 0.0001
+        else:
+            return 0.00001
+
+    EPOCHS = 180
 
     history = model.fit(
         train_ds,
         validation_data=val_ds,
         epochs=EPOCHS,
-        callbacks=tf.keras.callbacks.EarlyStopping(verbose=1, patience=30),
+        callbacks=[
+            # tf.keras.callbacks.LearningRateScheduler(
+            #     lr_scheduler, verbose=0),
+            tf.keras.callbacks.EarlyStopping(verbose=1, patience=50),
+        ],
     )
 
     model.save(model_path)

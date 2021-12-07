@@ -38,10 +38,10 @@ print("\n")
 maxes_clusters = {}
 
 for k, v in maxes_freq.items():
-    _10c = k // 10 % 10
+    _100c = k // 10
 
-    if _10c not in maxes_clusters:
-        maxes_clusters[_10c] = 0
-    maxes_clusters[_10c] += v
+    if _100c not in maxes_clusters:
+        maxes_clusters[_100c] = 0
+    maxes_clusters[_100c] += v
 
 print(maxes_clusters)

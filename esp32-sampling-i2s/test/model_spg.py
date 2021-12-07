@@ -68,20 +68,18 @@ def get_model_train(spectrogram_ds, input_shape, num_labels):
         model = models.Sequential([
             layers.Input(shape=input_shape),
             layers.Conv2D(8, 3, activation='relu'),
-            layers.MaxPooling2D(),
-            layers.Dropout(0.5),
             layers.Conv2D(16, 3, activation='relu'),
             layers.MaxPooling2D(),
             layers.Dropout(0.5),
             layers.Flatten(),
             layers.Dense(num_labels),
         ])
-        model = tfmot.quantization.keras.quantize_model(model)
+        # model = tfmot.quantization.keras.quantize_model(model)
 
     model.summary()
 
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001, amsgrad=True),
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy'],
     )
