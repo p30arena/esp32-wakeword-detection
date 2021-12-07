@@ -1,11 +1,13 @@
 import tensorflow as tf
 import hexdump
 
-from model_spg import get_spg_and_label_id, get_model_test
-from train_spg import waveform_ds, AUTOTUNE
+from model_spg import tf_get_file_and_label, get_model_test, get_spg_and_label_id
+from train_spg import data_dir, AUTOTUNE
 
-spectrogram_ds = waveform_ds.map(
-    get_spg_and_label_id, num_parallel_calls=AUTOTUNE)
+filenames = tf.io.gfile.glob(str(data_dir) + '/*/*.bin')
+filenames = tf.random.shuffle(filenames)
+spectrogram_ds = tf.data.Dataset.from_tensor_slices(filenames).map(
+    tf_get_file_and_label, num_parallel_calls=AUTOTUNE).map(get_spg_and_label_id, num_parallel_calls=AUTOTUNE)
 
 
 def representative_dataset():

@@ -7,27 +7,14 @@
 #define STFT_OUT_W 128
 #define STFT_OUT_SIZE (STFT_OUT_W * STFT_OUT_W)
 
-void abs_vector(double *b, int len)
+#define max_spec_val 360.0
+
+void normalizeEX(double *b, int len)
 {
   for (int i = 0; i < len; i++)
   {
     b[i] = abs(b[i]);
-  }
-}
-
-void normalize(double *b, int len)
-{
-  double m = -INFINITY;
-  for (int i = 0; i < len; i++)
-  {
-    if (m < b[i])
-    {
-      m = b[i];
-    }
-  }
-  for (int i = 0; i < len; i++)
-  {
-    b[i] = b[i] / m;
+    b[i] = b[i] >= max_spec_val ? 1 : b[i] / max_spec_val;
   }
 }
 
@@ -65,8 +52,7 @@ void getSpectrogram(int16_t *buf_in, int16_t *buf_2_in, bool use_second_buffer =
   image_32_512_t srcImg = {buf_out, STFT_OUT_W, STFT_OUT_W};
   image_t dstImg = {buf_img, SPG_IMG_W, SPG_IMG_W};
   resize(&srcImg, &dstImg, SPG_IMG_W, SPG_IMG_W);
-  abs_vector(buf_img, SPG_IMG_SIZE);
-  normalize(buf_img, SPG_IMG_SIZE);
+  normalizeEX(buf_img, SPG_IMG_SIZE);
 
   delete[] data[0];
   delete[] data;

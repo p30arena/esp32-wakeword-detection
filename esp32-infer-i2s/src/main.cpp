@@ -140,7 +140,6 @@ void adcReaderTask(void *param)
     int samples_read = sampler->read(data, FREQ);
     if (samples_read == FREQ)
     {
-      memcpy(prev_data_half, &data[FREQ_HALF], FREQ);
       xTaskNotify(inferenceTaskHandle, 1, eIncrement);
     }
     else
@@ -163,7 +162,7 @@ void inferenceTask(void *param)
     {
       bool mid_pred_res = false;
 
-      if (cnt > 1)
+      if (cnt)
       {
         mid_pred_res = predict(true);
       }
@@ -173,6 +172,7 @@ void inferenceTask(void *param)
         predict(false);
       }
 
+      memcpy(prev_data_half, &data[FREQ_HALF], FREQ);
       cnt++;
     }
   }

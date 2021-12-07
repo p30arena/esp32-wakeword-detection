@@ -31,9 +31,9 @@ def compute(path, actual, lbl):
         n_total += 1
         if idx == actual:
             n_ok += 1
-        else:
-            print(f)
-            print(softmnax.numpy())
+        # else:
+        #     print(f)
+        #     print(softmnax.numpy())
 
     print("{0} accuracy: {1}".format(lbl, n_ok/n_total))
 

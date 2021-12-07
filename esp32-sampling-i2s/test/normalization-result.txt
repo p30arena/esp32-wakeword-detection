@@ -1,0 +1,42 @@
+340
+CMD accuracy: 0.6938775510204082
+OTHER accuracy: 0.9544206479956068
+
+350
+CMD accuracy: 0.7959183673469388
+OTHER accuracy: 0.942339373970346
+
+360
+CMD accuracy: 0.9795918367346939
+OTHER accuracy: 0.7490389895661724
+
+360-light
+CMD accuracy: 0.8163265306122449
+OTHER accuracy: 0.9236683141131247
+
+after improving dataset
+
+360-light
+CMD accuracy: 0.8676470588235294
+OTHER accuracy: 0.9505766062602965
+
+after changing dropout
+
+360-light
+CMD accuracy: 0.8676470588235294
+OTHER accuracy: 0.9780340472267984
+
+after improving dataset and reverting dropout
+
+360-light
+CMD accuracy: 0.8928571428571429
+OTHER accuracy: 0.9335529928610653
+
+after removing val and test
+
+360-light
+CMD accuracy: 0.9166666666666666
+OTHER accuracy: 0.8989566172432729
+
+
+

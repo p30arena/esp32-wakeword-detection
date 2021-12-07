@@ -89,7 +89,8 @@ if __name__ == "__main__":
     # print('\nTest accuracy:', test_acc)
     # exit()
 
-    EPOCHS = 100
+    EPOCHS = 200
+
     history = model.fit(
         train_ds,
         validation_data=val_ds,
