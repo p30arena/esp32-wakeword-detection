@@ -13,7 +13,7 @@ while not closed:
                             channels=1, dtype=np.int16)
         sd.wait()
         frame_data = frame_data.flatten()
-        frame_data += 22000
+        # frame_data += 22000
         write_frame_wave("out/data/other-1/{0}.wav".format(fileno), frame_data)
         write_num_list("out/data/other-1/{0}.txt".format(fileno), frame_data)
         print("SAVED {0}".format(fileno))

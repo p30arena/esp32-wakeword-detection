@@ -11,7 +11,7 @@ frame_data = sd.rec(duration * freq, samplerate=freq,
 sd.wait()
 frame_data = frame_data.flatten()
 # frame_data *= -1
-frame_data += 22000
+# frame_data += 22000
 # frame_data += (-1 * np.iinfo(np.int16).min) // 2
 # num_data = []
 # le2be(frame_data, num_data)
