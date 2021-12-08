@@ -29,12 +29,12 @@ print('Number of examples per label:',
       len(tf.io.gfile.listdir(str(data_dir/commands[0]))))
 print('Example file tensor:', filenames[0])
 
-_80p = round(0.8 * num_samples)
-_10p = round(0.1 * num_samples)
+_90p = round(0.9 * num_samples)
+_5p = round(0.05 * num_samples)
 
-train_files = filenames[:_80p]
-val_files = filenames[_80p: _80p + _10p]
-test_files = filenames[-_10p:]
+train_files = filenames[:_90p]
+val_files = filenames[_90p: _90p + _5p]
+test_files = filenames[-_5p:]
 
 print('Training set size', len(train_files))
 print('Validation set size', len(val_files))
@@ -115,7 +115,8 @@ if __name__ == "__main__":
     test_ds = preprocess_dataset(test_files)
 
     # batch_size = 64
-    batch_size = 32
+    # batch_size = 32
+    batch_size = 16
     train_ds = train_ds.batch(batch_size)
     val_ds = val_ds.batch(batch_size)
 
@@ -161,28 +162,4 @@ if __name__ == "__main__":
     metrics = history.history
     plt.plot(history.epoch, metrics['loss'], metrics['val_loss'])
     plt.legend(['loss', 'val_loss'])
-    plt.show()
-
-    test_audio = []
-    test_labels = []
-
-    for audio, label in test_ds:
-        test_audio.append(audio.numpy())
-        test_labels.append(label.numpy())
-
-    test_audio = np.array(test_audio)
-    test_labels = np.array(test_labels)
-
-    y_pred = np.argmax(model.predict(test_audio), axis=1)
-    y_true = test_labels
-
-    test_acc = sum(y_pred == y_true) / len(y_true)
-    print(f'Test set accuracy: {test_acc:.0%}')
-
-    confusion_mtx = tf.math.confusion_matrix(y_true, y_pred)
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(confusion_mtx, xticklabels=commands, yticklabels=commands,
-                annot=True, fmt='g')
-    plt.xlabel('Prediction')
-    plt.ylabel('Label')
     plt.show()

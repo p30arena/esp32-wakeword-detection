@@ -60,6 +60,8 @@ def get_spectrogram(waveform):
     spectrogram = tf.image.resize(spectrogram[..., None], (32, 32))
     spectrogram = tf.squeeze(spectrogram, axis=2)
 
+    # return tf.signal.mfccs_from_log_mel_spectrograms(spectrogram)
+
     return spectrogram
 
 
@@ -84,35 +86,32 @@ def get_model_train(spectrogram_ds, input_shape, num_labels):
     if model_path.exists():
         model = tf.keras.models.load_model(model_path)
     else:
-        # model = models.Sequential([
-        #     layers.Input(shape=input_shape),
-        #     # layers.Resizing(32, 32),
-        #     layers.Conv2D(8, 3, activation='relu'),
-        #     layers.MaxPooling2D(),
-        #     layers.Dropout(0.25),
-        #     layers.Flatten(),
-        #     layers.Dense(16, activation='relu'),
-        #     layers.Dropout(0.5),
-        #     layers.Dense(num_labels),
-        # ])
+        # Instantiate the `tf.keras.layers.Normalization` layer.
+        norm_layer = layers.Normalization()
+        # Fit the state of the layer to the spectrograms
+        # with `Normalization.adapt`.
+        norm_layer.adapt(data=spectrogram_ds.map(
+            map_func=lambda spec, label: spec))
+
         model = models.Sequential([
             layers.Input(shape=input_shape),
-            layers.Conv2D(8, 3, activation='relu'),
+            # Normalize.
+            norm_layer,
+            layers.Conv2D(32, 3, activation='relu'),
+            layers.Conv2D(64, 3, activation='relu'),
             layers.MaxPooling2D(),
-            layers.Dropout(0.5),
-            layers.Conv2D(16, 3, activation='relu'),
-            layers.MaxPooling2D(),
-            layers.Dropout(0.5),
+            layers.Dropout(0.25),
             layers.Flatten(),
-            layers.Dense(num_labels),
+            layers.Dense(128, activation='relu'),
+            layers.Dropout(0.5),
+            layers.Dense(1),
         ])
-        model = tfmot.quantization.keras.quantize_model(model)
 
     model.summary()
 
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=['accuracy'],
     )
 

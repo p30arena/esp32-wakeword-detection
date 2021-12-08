@@ -117,27 +117,3 @@ if __name__ == "__main__":
     plt.plot(history.epoch, metrics['loss'], metrics['val_loss'])
     plt.legend(['loss', 'val_loss'])
     plt.show()
-
-    test_audio = []
-    test_labels = []
-
-    for audio, label in test_ds:
-        test_audio.append(audio.numpy())
-        test_labels.append(label.numpy())
-
-    test_audio = np.array(test_audio)
-    test_labels = np.array(test_labels)
-
-    y_pred = np.argmax(model.predict(test_audio), axis=1)
-    y_true = test_labels
-
-    test_acc = sum(y_pred == y_true) / len(y_true)
-    print(f'Test set accuracy: {test_acc:.0%}')
-
-    confusion_mtx = tf.math.confusion_matrix(y_true, y_pred)
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(confusion_mtx, xticklabels=commands, yticklabels=commands,
-                annot=True, fmt='g')
-    plt.xlabel('Prediction')
-    plt.ylabel('Label')
-    plt.show()

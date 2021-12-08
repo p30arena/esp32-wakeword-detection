@@ -96,21 +96,40 @@ bool predict(bool isMid)
     return false;
   }
 
-  double a = output->data.int8[0];
-  double b = output->data.int8[1];
-  Serial.print(a);
-  Serial.print(" ");
-  Serial.print(b);
-  Serial.println();
-  softmax2(&a, &b);
+  // double a = output->data.int8[0];
+  // double b = output->data.int8[1];
+  // Serial.print(a);
+  // Serial.print(" ");
+  // Serial.print(b);
+  // Serial.println();
+  // softmax2(&a, &b);
 
-  Serial.print("CMD PROB: ");
-  Serial.println(a);
-  Serial.print("OTHER PROB: ");
-  Serial.println(b);
-  Serial.println();
+  // Serial.print("CMD PROB: ");
+  // Serial.println(a);
+  // Serial.print("OTHER PROB: ");
+  // Serial.println(b);
+  // Serial.println();
 
-  if (a > 0.98)
+  // if (a > 0.98)
+  // {
+  //   Serial.println('\n');
+  //   Serial.println("I'm at your service!");
+  //   Serial.println("abreman.ir");
+  //   Serial.println('\n');
+
+  //   wait_v = true;
+  //   wait_t = millis();
+
+  //   return true;
+  // }
+  // else
+  // {
+  //   return false;
+  // }
+
+  int a = sigmoid(output->data.int8[0]) < 0.5 ? 0 : 1;
+
+  if (a == 0)
   {
     Serial.println('\n');
     Serial.println("I'm at your service!");
@@ -124,6 +143,7 @@ bool predict(bool isMid)
   }
   else
   {
+    Serial.println("nothing");
     return false;
   }
 }

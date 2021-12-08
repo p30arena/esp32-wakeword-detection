@@ -72,3 +72,10 @@ void softmax2(double *a, double *b)
   *a = exp(*a - constant);
   *b = exp(*b - constant);
 }
+
+double sigmoid(double x)
+{
+  double result;
+  result = 1 / (1 + exp(-x));
+  return result;
+}

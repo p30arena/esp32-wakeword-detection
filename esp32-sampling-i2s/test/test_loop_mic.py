@@ -16,15 +16,17 @@ last_half = []
 
 def infer(frame_data, is_mid=False):
     spectrogram = get_spectrogram(frame_data.astype(np.float32) / 32768)
-    spectrogram = spectrogram[None, :]
+    spectrogram = np.reshape(spectrogram, (32, 32, 1))[None, :]
     prediction = model.predict(spectrogram)
-    sm = tf.nn.softmax(prediction[0])
-    idx = np.argmax(sm)
+    # sm = tf.nn.softmax(prediction[0])
+    # idx = np.argmax(sm)
+    idx = tf.where(tf.nn.sigmoid(
+        prediction[0].astype(np.float) / 128) < 0.5, 0, 1).numpy()[0]
 
     if idx == 1 and not is_mid:
         print("{0} nothing happening here".format(i))
     elif idx == 0:
-        print('\nprobability: {0}'.format(sm[0]))
+        # print('\nprobability: {0}'.format(sm[0]))
         print("I'm at your service!")
         print("abreman.ir")
         print('')

@@ -24,9 +24,11 @@ def compute(path, actual, lbl):
         model.invoke()
 
         output_data = model.get_tensor(output_details[0]['index'])
-        softmnax = tf.nn.softmax(
-            output_data[0].astype(np.float) / 128)
-        idx = tf.argmax(softmnax).numpy()
+        idx = tf.where(tf.nn.sigmoid(
+            output_data[0].astype(np.float) / 128) < 0.5, 0, 1).numpy()[0]
+        # softmnax = tf.nn.softmax(
+        #     output_data[0].astype(np.float) / 128)
+        # idx = tf.argmax(softmnax).numpy()
 
         n_total += 1
         if idx == actual:
