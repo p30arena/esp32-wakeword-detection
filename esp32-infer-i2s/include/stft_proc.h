@@ -7,7 +7,7 @@
 #define STFT_OUT_W 128
 #define STFT_OUT_SIZE (STFT_OUT_W * STFT_OUT_W)
 
-#define max_spec_val 360.0
+#define max_spec_val 340.0
 
 void normalizeEX(double *b, int len)
 {
