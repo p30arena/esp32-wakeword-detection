@@ -21,8 +21,8 @@ def load_wav_16k_mono(filename):
         file_contents,
         desired_channels=1)
     wav = tf.squeeze(wav, axis=-1)
-    sample_rate = tf.cast(sample_rate, dtype=tf.int64)
-    wav = tfio.audio.resample(wav, rate_in=sample_rate, rate_out=16000)
+    # sample_rate = tf.cast(sample_rate, dtype=tf.int64)
+    # wav = tfio.audio.resample(wav, rate_in=sample_rate, rate_out=16000)
     return wav
 
 
@@ -61,10 +61,11 @@ AUTOTUNE = tf.data.AUTOTUNE
 set_params(commands, AUTOTUNE)
 
 files_ds = tf.data.Dataset.from_tensor_slices(filenames)
-files_ds = files_ds.map(load_wav_for_map)
+files_ds = files_ds.map(load_wav_for_map, num_parallel_calls=AUTOTUNE)
 
 # extract embedding
-files_ds = files_ds.map(extract_embedding).unbatch()
+files_ds = files_ds.map(
+    extract_embedding, num_parallel_calls=AUTOTUNE).unbatch()
 files_ds = files_ds.cache()
 
 _90p = round(0.9 * num_samples)
@@ -75,9 +76,9 @@ val_ds = files_ds.skip(_90p)
 test_ds = val_ds.skip(_5p)
 val_ds = test_ds.take(_5p)
 
-train_ds = train_ds.cache().shuffle(1000).batch(32).prefetch(tf.data.AUTOTUNE)
-val_ds = val_ds.cache().batch(32).prefetch(tf.data.AUTOTUNE)
-test_ds = test_ds.cache().batch(32).prefetch(tf.data.AUTOTUNE)
+train_ds = train_ds.shuffle(1000).batch(32).cache().prefetch(AUTOTUNE)
+val_ds = val_ds.batch(32).cache().prefetch(AUTOTUNE)
+test_ds = test_ds.batch(32).cache().prefetch(AUTOTUNE)
 
 model = tf.keras.Sequential([
     tf.keras.layers.Input(shape=(1024), dtype=tf.float32,

@@ -12,7 +12,7 @@ i = 0
 closed = False
 duration = 1  # seconds
 model = tf.keras.models.load_model(model_path)
-last_half = []
+last_half = np.array([])
 
 
 def infer(frame_data, is_mid=False):
@@ -27,15 +27,16 @@ def infer(frame_data, is_mid=False):
     # idx = tf.where(tf.nn.sigmoid(
     #     prediction[0].astype(np.float) / 128) < 0.5, 0, 1).numpy()[0]
 
-    if idx == 1 and not is_mid:
-        print("{0} nothing happening here".format(i))
-    elif idx == 0:
+    if idx == 0:
         # print('\nprobability: {0}'.format(sm[0]))
         print("I'm at your service!")
         print("abreman.ir")
         print('')
-        # sleep(3)
+        sleep(0.5)
         return True
+    elif not is_mid:
+        print("{0} nothing happening here".format(i))
+
     return False
 
 
@@ -45,7 +46,7 @@ while not closed:
                             channels=1, dtype=np.int16)
         sd.wait()
         frame_data = frame_data.flatten()
-        frame_data += 22000  # this dataset is recorded with 22k booster
+        # frame_data += 22000  # if dataset is recorded with 22k booster
         mid_ok = False
         if len(last_half) > 0:
             mid_ok = infer(last_half + frame_data[:8000], is_mid=True)
