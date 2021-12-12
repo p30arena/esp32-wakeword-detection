@@ -6,9 +6,9 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import tensorflow_io as tfio
 
-from model import model_path, get_label, get_waveform_and_label, set_params
-from model import preprocess_dataset, get_spectrogram_and_label_id, get_spectrogram
+from model import get_label, get_waveform_and_label, set_params
 
+model_path = pathlib.Path('out/model')
 yamnet_model_handle = 'https://tfhub.dev/google/yamnet/1'
 yamnet_model = hub.load(yamnet_model_handle)
 

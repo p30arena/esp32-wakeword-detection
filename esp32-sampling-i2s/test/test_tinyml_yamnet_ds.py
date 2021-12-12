@@ -7,16 +7,25 @@ files_ds = tf.data.Dataset.from_tensor_slices(filenames)
 files_ds = files_ds.map(load_wav_for_map, num_parallel_calls=AUTOTUNE)
 files_ds = files_ds.cache()
 
-model = tf.saved_model.load(
-    str(model_path.parent.joinpath('./model-combined')))
+model = tf.lite.Interpreter(str(model_path.joinpath('./model.tflite')))
+input_details = model.get_input_details()
+output_details = model.get_output_details()
 
+model.resize_tensor_input(
+    input_details[0]['index'], (16000,))
+
+model.allocate_tensors()
 
 results = {}
 
 for frame_data, lbl_idx in files_ds:
     lbl_idx = lbl_idx.numpy()
-    prediction = model(frame_data)
-    sm = tf.nn.softmax(prediction)
+    model.set_tensor(input_details[0]['index'],
+                     tf.cast(frame_data * 255 - 128, tf.int8))
+    model.invoke()
+    prediction = model.get_tensor(output_details[0]['index'])
+    print(prediction)
+    sm = tf.nn.softmax(prediction.astype(np.float) / 128)
     idx = np.argmax(sm)
 
     if lbl_idx not in results:

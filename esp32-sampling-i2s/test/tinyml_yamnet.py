@@ -1,16 +1,18 @@
 import tensorflow as tf
 import hexdump
 
-from yamnet_commons import train_ds, model_path, yamnet_model
+from yamnet_commons import train_ds, model_path
 
 
 def representative_dataset():
-    for input_value, output_value in train_ds.batch(1):
-        scores, embeddings, spectrogram = yamnet_model(input_value)
-        yield [embeddings]
+    for batch, _ in train_ds.take(1):
+        for input_value in batch:
+            yield [input_value]
 
 
-model = tf.keras.models.load_model(model_path)
+model = tf.keras.models.load_model(
+    model_path.parent.joinpath('./model-combined'))
+model.summary()
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 converter.optimizations = [tf.lite.Optimize.DEFAULT]
 converter.representative_dataset = representative_dataset

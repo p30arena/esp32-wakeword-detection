@@ -5,27 +5,21 @@ from time import sleep
 
 from commons import freq
 
-from model import model_path
-from yamnet_commons import yamnet_model
+from yamnet_commons import model_path
 
 i = 0
 closed = False
 duration = 1  # seconds
-model = tf.keras.models.load_model(model_path)
+model = tf.saved_model.load(
+    str(model_path.parent.joinpath('./model-combined')))
 last_half = np.array([])
 
 
 def infer(frame_data, is_mid=False):
     frame_data = np.clip(frame_data, -32768, 32768)
-    scores, embeddings, spectrogram = yamnet_model(
-        frame_data.astype(np.float32) / 32768)
-    # spectrogram = get_spectrogram(frame_data.astype(np.float32) / 32768)
-    # spectrogram = np.reshape(spectrogram, (32, 32, 1))[None, :]
-    prediction = model.predict(embeddings)
-    sm = tf.nn.softmax(prediction[0])
+    prediction = model(frame_data.astype(np.float32) / 32768)
+    sm = tf.nn.softmax(prediction)
     idx = np.argmax(sm)
-    # idx = tf.where(tf.nn.sigmoid(
-    #     prediction[0].astype(np.float) / 128) < 0.5, 0, 1).numpy()[0]
 
     if idx == 0:
         # print('\nprobability: {0}'.format(sm[0]))
