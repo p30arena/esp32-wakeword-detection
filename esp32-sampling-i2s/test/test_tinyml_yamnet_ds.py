@@ -11,8 +11,7 @@ model = tf.lite.Interpreter(str(model_path.joinpath('./model.tflite')))
 input_details = model.get_input_details()
 output_details = model.get_output_details()
 
-model.resize_tensor_input(
-    input_details[0]['index'], (16000,))
+model.resize_tensor_input(input_details[0]['index'], [16000], strict=True)
 
 model.allocate_tensors()
 
@@ -20,12 +19,10 @@ results = {}
 
 for frame_data, lbl_idx in files_ds:
     lbl_idx = lbl_idx.numpy()
-    model.set_tensor(input_details[0]['index'],
-                     tf.cast(frame_data * 255 - 128, tf.int8))
+    model.set_tensor(input_details[0]['index'], frame_data)
     model.invoke()
     prediction = model.get_tensor(output_details[0]['index'])
-    print(prediction)
-    sm = tf.nn.softmax(prediction.astype(np.float) / 128)
+    sm = tf.nn.softmax(prediction)
     idx = np.argmax(sm)
 
     if lbl_idx not in results:
